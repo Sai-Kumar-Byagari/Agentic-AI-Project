@@ -54,19 +54,20 @@ export default function InvestigationScreen() {
     return (
       <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '30px 24px 10px' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          {/* Coverage bar */}
+          {/* Coverage bar - matching primary v3 design */}
           <div
             style={{
+              flex: 'none',
               display: 'flex',
               flexWrap: 'wrap',
               alignItems: 'center',
               gap: '10px 20px',
               padding: '11px 22px',
               background: '#FBFAFC',
-              borderBottom: `1px solid ${COLORS.border}`,
-              borderRadius: '8px',
+              borderBottom: `1px solid rgba(35,29,40,.09)`,
             }}
           >
+            {/* Coverage section with domain segments */}
             <span style={{ display: 'flex', alignItems: 'center', gap: '7px', flex: 'none' }}>
               <span
                 style={{
@@ -79,51 +80,24 @@ export default function InvestigationScreen() {
                 Coverage
               </span>
               <span style={{ display: 'flex', gap: '3px' }}>
-                <span
-                  style={{
-                    width: '8px',
-                    height: '8px',
-                    borderRadius: '50%',
-                    background: COLORS.success,
-                    title: 'Prometheus',
-                  }}
-                ></span>
-                <span
-                  style={{
-                    width: '8px',
-                    height: '8px',
-                    borderRadius: '50%',
-                    background: COLORS.success,
-                    title: 'Logs',
-                  }}
-                ></span>
-                <span
-                  style={{
-                    width: '8px',
-                    height: '8px',
-                    borderRadius: '50%',
-                    background: COLORS.success,
-                    title: 'Traces',
-                  }}
-                ></span>
-                <span
-                  style={{
-                    width: '8px',
-                    height: '8px',
-                    borderRadius: '50%',
-                    background: COLORS.success,
-                    title: 'Deploys',
-                  }}
-                ></span>
-                <span
-                  style={{
-                    width: '8px',
-                    height: '8px',
-                    borderRadius: '50%',
-                    background: COLORS.danger,
-                    title: 'Code',
-                  }}
-                ></span>
+                {[
+                  { name: 'Prometheus', bg: COLORS.success },
+                  { name: 'Logs', bg: COLORS.success },
+                  { name: 'Traces', bg: COLORS.success },
+                  { name: 'Deploys', bg: COLORS.success },
+                  { name: 'Code', bg: COLORS.danger },
+                ].map((domain) => (
+                  <span
+                    key={domain.name}
+                    style={{
+                      width: '8px',
+                      height: '8px',
+                      borderRadius: '2px',
+                      background: domain.bg,
+                    }}
+                    title={domain.name}
+                  ></span>
+                ))}
               </span>
               <span
                 style={{
@@ -132,55 +106,65 @@ export default function InvestigationScreen() {
                   color: '#4A4351',
                 }}
               >
-                4 of 5 sources operational
+                4 of 5 sources
               </span>
             </span>
 
+            {/* Gates section */}
+            <span style={{ display: 'flex', alignItems: 'center', gap: '7px', flexWrap: 'wrap' }}>
+              {[
+                { name: 'grounding', state: 'active', bg: 'rgba(63,122,82,.12)', fg: COLORS.success },
+                { name: 'evals', state: 'pass', bg: 'rgba(63,122,82,.12)', fg: COLORS.success },
+                { name: 'compliance', state: 'pass', bg: 'rgba(63,122,82,.12)', fg: COLORS.success },
+              ].map((gate) => (
+                <span
+                  key={gate.name}
+                  style={{
+                    fontSize: '10px',
+                    padding: '3px 8px',
+                    borderRadius: '4px',
+                    background: gate.bg,
+                    color: gate.fg,
+                    fontWeight: 500,
+                  }}
+                >
+                  {gate.name} · {gate.state}
+                </span>
+              ))}
+            </span>
+
+            {/* Spacer */}
             <span style={{ flex: 1 }}></span>
 
+            {/* Budget section */}
             <span style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
-              <span style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-                <span
-                  style={{
-                    fontFamily: "'IBM Plex Mono', monospace",
-                    fontSize: '12px',
-                    color: COLORS.deep,
-                  }}
-                >
-                  127
+              {[
+                { value: '50m', label: 'timeout' },
+                { value: '12', label: 'parallelism' },
+                { value: '2.1GB', label: 'memory' },
+              ].map((metric) => (
+                <span key={metric.label} style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+                  <span
+                    style={{
+                      fontFamily: "'IBM Plex Mono', monospace",
+                      fontSize: '12px',
+                      color: COLORS.deep,
+                    }}
+                  >
+                    {metric.value}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: '10px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '.1em',
+                      color: COLORS.textTertiary,
+                    }}
+                  >
+                    {metric.label}
+                  </span>
                 </span>
-                <span
-                  style={{
-                    fontSize: '10px',
-                    textTransform: 'uppercase',
-                    letterSpacing: '.1em',
-                    color: COLORS.textTertiary,
-                  }}
-                >
-                  Runs this week
-                </span>
-              </span>
-              <span style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-                <span
-                  style={{
-                    fontFamily: "'IBM Plex Mono', monospace",
-                    fontSize: '12px',
-                    color: COLORS.success,
-                  }}
-                >
-                  84%
-                </span>
-                <span
-                  style={{
-                    fontSize: '10px',
-                    textTransform: 'uppercase',
-                    letterSpacing: '.1em',
-                    color: COLORS.textTertiary,
-                  }}
-                >
-                  Verified
-                </span>
-              </span>
+              ))}
             </span>
           </div>
 
