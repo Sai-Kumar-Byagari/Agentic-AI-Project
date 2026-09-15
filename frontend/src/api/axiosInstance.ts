@@ -10,6 +10,9 @@ const axiosInstance: AxiosInstance = axios.create({
   },
 });
 
+// Queue for pending requests during token refresh
+let refreshPromise: Promise<void> | null = null;
+
 // Request interceptor
 axiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
@@ -36,13 +39,55 @@ axiosInstance.interceptors.response.use(
   (response: AxiosResponse) => {
     return response;
   },
-  (error) => {
-    // TODO: Handle 401 (token refresh) in Stage 2
-    // TODO: Handle other error codes and display user-friendly messages
+  async (error) => {
+    const originalRequest = error.config;
 
-    if (error.response?.status === 401) {
-      // Session expired - redirect to login
-      window.location.href = '/login';
+    // Handle 401 Unauthorized - attempt token refresh
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      try {
+        // Prevent multiple refresh attempts
+        if (!refreshPromise) {
+          refreshPromise = (async () => {
+            try {
+              // Call token refresh endpoint
+              await axiosInstance.post('/auth/refresh-token');
+              // Token refresh successful, continue
+            } catch (refreshError) {
+              // Token refresh failed - redirect to login
+              console.error('Token refresh failed:', refreshError);
+              window.location.href = '/login?session_expired=true';
+              throw refreshError;
+            } finally {
+              refreshPromise = null;
+            }
+          })();
+        }
+
+        // Wait for refresh to complete
+        await refreshPromise;
+
+        // Retry original request with new token
+        return axiosInstance(originalRequest);
+      } catch (err) {
+        // Refresh failed, redirect to login
+        window.location.href = '/login?session_expired=true';
+        return Promise.reject(err);
+      }
+    }
+
+    // Handle other error codes
+    if (error.response?.status === 403) {
+      console.error('Forbidden: Access denied');
+    } else if (error.response?.status === 404) {
+      console.error('Not found:', error.config?.url);
+    } else if (error.response?.status === 429) {
+      console.error('Rate limited: Too many requests');
+    } else if (error.response?.status === 500) {
+      console.error('Server error: Internal server error');
+    } else if (!error.response) {
+      console.error('Network error:', error.message);
     }
 
     return Promise.reject(error);

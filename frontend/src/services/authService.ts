@@ -10,8 +10,9 @@ import {
   ForgotPasswordRequest,
   ForgotPasswordResponse,
 } from '../types/auth.types';
-import { normalizeApiError } from '../utils/apiError';
+import { normalizeApiError, NormalizedApiError } from '../utils/apiError';
 import { mockLoginResponse } from '../constants/mockData';
+import { logService } from './logService';
 
 const USE_MOCK_DATA = import.meta.env.VITE_USE_MOCK_DATA === 'true';
 
@@ -20,10 +21,15 @@ export const authService = {
     try {
       // Use mock data in development
       if (USE_MOCK_DATA) {
-        console.log('[MOCK] Login:', { email });
+        logService.logInfo('Mock login', { email });
         return new Promise((resolve) => {
           setTimeout(() => resolve(mockLoginResponse), 500);
         });
+      }
+
+      // Validate inputs
+      if (!email || !password) {
+        throw new NormalizedApiError('VALIDATION_ERROR', 'Email and password are required', 400);
       }
 
       const response = await axiosInstance.post<LoginResponse>(AUTH_ENDPOINTS.LOGIN, {
@@ -31,9 +37,18 @@ export const authService = {
         password,
       });
 
+      if (response.data.status === 'success') {
+        logService.logInfo('Login successful', { email, userId: response.data.data.user.id });
+      }
+
       return response.data;
     } catch (error) {
-      throw normalizeApiError(error);
+      const normalizedError = normalizeApiError(error);
+      logService.logError('Login failed', error instanceof Error ? error : new Error(normalizedError.message), {
+        email,
+        code: normalizedError.code,
+      });
+      throw normalizedError;
     }
   },
 
@@ -63,16 +78,25 @@ export const authService = {
     try {
       // Use mock data in development
       if (USE_MOCK_DATA) {
-        console.log('[MOCK] Logout');
+        logService.logInfo('Mock logout');
         return new Promise((resolve) => {
           setTimeout(() => resolve({ status: 'success', message: 'Logged out', timestamp: new Date().toISOString() }), 300);
         });
       }
 
       const response = await axiosInstance.post<LogoutResponse>(AUTH_ENDPOINTS.LOGOUT);
+
+      if (response.data.status === 'success') {
+        logService.logInfo('Logout successful');
+      }
+
       return response.data;
     } catch (error) {
-      throw normalizeApiError(error);
+      const normalizedError = normalizeApiError(error);
+      logService.logError('Logout failed', error instanceof Error ? error : new Error(normalizedError.message), {
+        code: normalizedError.code,
+      });
+      throw normalizedError;
     }
   },
 
@@ -80,16 +104,25 @@ export const authService = {
     try {
       // Use mock data in development
       if (USE_MOCK_DATA) {
-        console.log('[MOCK] Refresh Token');
+        logService.logInfo('Mock token refresh');
         return new Promise((resolve) => {
           setTimeout(() => resolve({ status: 'success', data: { sessionToken: 'jwt_refreshed_' + Date.now(), expiresIn: 28800 } }), 300);
         });
       }
 
       const response = await axiosInstance.post<RefreshTokenResponse>(AUTH_ENDPOINTS.REFRESH_TOKEN);
+
+      if (response.data.status === 'success') {
+        logService.logInfo('Token refreshed successfully');
+      }
+
       return response.data;
     } catch (error) {
-      throw normalizeApiError(error);
+      const normalizedError = normalizeApiError(error);
+      logService.logError('Token refresh failed', error instanceof Error ? error : new Error(normalizedError.message), {
+        code: normalizedError.code,
+      });
+      throw normalizedError;
     }
   },
 
