@@ -1,0 +1,376 @@
+ODR Portal — Frontend Project Structure
+(React + TypeScript, Vite, Redux Toolkit, Tailwind)
+Generated as a reference for use in another project. node_modules, build output,
+lockfiles, and test files are excluded. Each entry is one line: relative path — description.
+
+================================================================================
+ROOT CONFIG FILES
+================================================================================
+package.json            — NPM package manifest: dependencies, scripts (dev/build/lint)
+tsconfig.json            — Root TypeScript compiler configuration
+tsconfig.node.json       — TypeScript config for Vite/Node-context config files
+vite.config.js           — Vite bundler configuration (plugins, dev server, aliases)
+eslint.config.js         — ESLint flat-config rules for the project
+
+================================================================================
+src/  (top-level entry files)
+================================================================================
+main.jsx                 — App entry point: mounts <Root /> into the DOM, imports global CSS
+Root.tsx                 — Wraps <App /> in Redux <Provider>; hydrates auth state from cookies/localStorage on load; global error listeners
+App.jsx                  — Route table (react-router): lazy-loaded pages, ProtectedRoute/AuthRoute guards, menu-code-based access control
+index.css                — Global Tailwind CSS entry and base styles
+
+================================================================================
+src/pages/  — Top-level routed page components (one per route)
+================================================================================
+ActivationScreen.tsx     — Account activation screen: OTP verification then set-password flow, via useActivation
+Agents.tsx               — Table of agents (managers view) with role/last-login columns, navigates to their tickets
+AuthScreen.tsx           — Login screen with email/password, captcha, remember-me, and view switching via useAuth
+AuthWrapper.tsx           — Wraps AuthScreen in an ErrorBoundary with an auth-specific fallback
+CardTypes.tsx             — CRUD admin page for card types (add/edit/delete) using useCardTypes
+Dashboard.tsx             — Main dashboard: stats, dept/reason cards, SLA alerts/charts, recent tickets, layout driven by useDashboard
+DepartmentManagement.tsx — CRUD admin page for departments using useDepartments
+DisputeReasons.tsx        — CRUD admin page for dispute reasons/categories using useDisputeReasons
+FormFieldManagement.tsx  — CRUD admin page for dynamic form fields per form/department using useFormFields
+HolidayManagement.tsx     — CRUD admin page for holidays using useHolidays
+LeaveManagement.tsx      — Leave/availability calendar + records table with mark/edit leave modals
+NotFound.tsx              — 404 fallback page with go-back/home actions
+PartnerManagement.tsx    — CRUD admin page for partners (issuers) using usePartners
+Profile.tsx               — User profile page: settings, notification prefs, role access, change password, logout
+RaiseDispute.tsx          — Multi-section dispute-raising form (transaction, dispute details, review, submit) via useRaiseDispute
+Reports.tsx               — Reports listing with filters, generate-report modal, and download, via useReports
+RoleManagement.tsx       — CRUD admin page for roles and menu permissions using useRoles
+SLA.tsx                   — SLA configuration CRUD page with manage drawer for TAT rules
+SrStatusManagement.tsx   — CRUD admin page for SR statuses using useSrStatuses
+SsoCallback.tsx           — Handles SAML SSO redirect callback, exchanges code for session, then routes in
+TicketDetails.tsx         — Full ticket detail view: thread messages, findings, SLA timeline, actions (assign/escalate/close)
+TicketTatRules.tsx        — CRUD admin page for ticket TAT (turnaround time) rules using useTicketTatRules
+Tickets.tsx                — Ticket list/grid page with filters, search, date range, and card/table view toggle
+TransitionRulesManagement.tsx — CRUD admin page for SR-status transition/routing rules using useTransitionRules
+UserManagement.tsx        — CRUD admin page for users (add/edit/deactivate) using useUsers and useUserForm
+
+================================================================================
+src/hooks/  — Custom hooks holding page/feature business logic and state
+================================================================================
+useActivation.ts          — Manages account-activation state: OTP step, set-password step, validation, submit handlers
+useAgents.ts               — Fetches agents list for a manager into Redux (agentSlice), exposes fetchAgents/loading/error
+useAuth.ts                  — Manages login flow: form state, captcha, remember-me cookie, submit, Redux auth dispatch
+useCardTypes.ts            — CRUD state/handlers for card types (Redux-backed): fetch, add, edit, delete, validation
+useChangeP.ts               — Change-password form state, validation, and submit via profileService
+useDashboard.ts             — Dashboard data/business logic: permissions, filters, fetch orchestration, derived stats
+useDepartments.ts           — CRUD state/handlers for departments plus escalation matrix, Redux-backed
+useDisputeReasons.ts        — CRUD state/handlers for dispute reasons (add/edit/delete forms), Redux-backed
+useFindings.ts              — Legacy findings hook (own-dept view): summary, chargebacks, submit/review actions
+useFormFields.ts            — CRUD state/handlers for dynamic form fields per form key
+useHolidays.ts              — CRUD state/handlers for holidays (add/edit/delete forms), Redux-backed
+useLeaveManagement.ts       — CRUD state for leave/availability records: mark, edit, month/year, calendar selection
+useMenuPermissions.ts       — Derives boolean CRUD/ticket/report permission flags for a given menu code from Redux
+useNavigation.ts            — Builds the sidebar navigation items from user's menu access, filtered by CX/admin role
+useOtherDeptFindings.ts     — Fetches other departments' findings + department list for a ticket
+usePartners.ts              — CRUD state/handlers for partners (issuers), Redux-backed
+useProfile.ts                — Profile view/edit state, notification prefs, update submit, Redux-backed
+useRaiseDispute.ts          — Orchestrates the raise-dispute form: reasons, transaction/dispute data, files, submit
+useReports.ts                — Reports list fetch/filter state, generate-report and download handlers, Redux-backed
+useRoles.ts                  — CRUD state/handlers for roles, menu access/permissions editing, Redux-backed
+useSLAConfigurations.ts     — CRUD state/handlers for SLA configurations (add/edit/delete), Redux-backed
+useSrStatuses.ts             — CRUD state/handlers for SR statuses (add/edit/delete), Redux-backed
+useTableMaxHeight.ts         — Measures container's viewport offset to compute a fill-remaining-height maxHeight
+useThreadMessages.ts        — Paginated ticket thread messages: fetch, load more, send message with attachments
+useTicketDetails.ts          — Ticket detail state: fetch, assign/escalate/close actions, target depts/users lookup
+useTicketTatRules.ts         — CRUD state/handlers for ticket TAT rules, Redux-backed
+useTickets.ts                 — Ticket list state: filters, fetch, pagination, filter-status options, Redux-backed
+useToast.ts                    — Simple toast queue: addToast/removeToast state management
+useTransitionRules.ts        — CRUD state/handlers for SR-status transition rules, Redux-backed
+useUserForm.ts                — Add-user form state, validation, and submit via userService
+useUsers.ts                    — User list state: filters, fetch/append (pagination), deactivate/resend actions, Redux-backed
+useYourFindings.ts            — Current department's findings: summary, chargebacks, submit/review actions for a ticket
+
+================================================================================
+src/redux/  — Redux Toolkit store and slices
+================================================================================
+store.ts                     — Configures the Redux store, combining all domain slice reducers
+
+src/redux/slices/
+  agentSlice.ts               — Redux slice holding agents list, loading, and error state
+  authSlice.ts                 — Redux slice for logged-in user, auth status, hydration and error state
+  cardTypesSlice.ts            — Redux slice holding card types list, loading, and error state
+  connectivitySlice.ts         — Redux slice tracking whether the backend is unreachable
+  departmentSlice.ts           — Redux slice for departments list with add/update reducers and loading/error state
+  disputeReasonsSlice.ts       — Redux slice for dispute reasons/categories with per-flow (add/edit/delete) loading/error
+  holidaysSlice.ts             — Redux slice holding holidays list, loading, and error state
+  leaveManagementSlice.ts      — Redux slice holding user availability/leave records, loading, and error state
+  partnerSlice.ts               — Redux slice for partners list with add/update reducers and loading/error state
+  profileSlice.ts               — Redux slice for current user's profile, notification prefs, and update state
+  reportsSlice.ts               — Redux slice holding generated reports list, loading, and error state
+  roleSlice.ts                   — Redux slice for roles, role options (permissions/menuAccess), loading/error state
+  slaConfigurationsSlice.ts     — Redux slice for SLA configurations/dispute reasons with per-flow loading/error
+  srStatusSlice.ts               — Redux slice holding SR statuses list, loading, and error state
+  ticketSlice.ts                  — Redux slice for tickets list, pagination meta, filters, and filter dropdown options
+  ticketTatRulesSlice.ts         — Redux slice holding ticket TAT rules list, loading, and error state
+  transitionRuleSlice.ts         — Redux slice holding department transition rules list, loading, and error state
+  userSlice.ts                    — Redux slice for users list, pagination meta, filters, with add/update/append reducers
+
+================================================================================
+src/services/  — API call wrappers (one per domain), all use src/api/axiosInstance
+================================================================================
+agentService.ts              — API calls to fetch agents for a given manager, normalizing varying response shapes
+authService.ts                — API calls for captcha, login, OTP verify/resend, forgot/reset password, activation
+cardTypeService.ts            — CRUD API calls for card types (list, get, create, update)
+dashboardService.ts           — API calls for dashboard stats, ticket trend, and SLA summary data
+departmentService.ts          — CRUD API calls for departments, escalation matrix, and department statuses
+disputeReasonsService.ts      — CRUD API calls for dispute reasons and their categories
+findingService.ts              — API calls for department findings, chargeback details, and review results on tickets
+formFieldService.ts           — CRUD API calls for dynamic form field configuration (create/update/deactivate)
+holidayService.ts              — CRUD API calls for holidays (list, create, update, delete)
+leaveManagementService.ts     — API calls for leave calendar, today's availability, and user availability
+logService.ts                   — Singleton client-side logger that posts error/info logs to the backend
+partnerService.ts              — CRUD API calls for partners (list, create, update, delete)
+profileService.ts               — API calls to get/update own profile and notification preferences
+raiseDisputeService.ts         — API calls for dispute reasons, issuers, card types lookups used in dispute creation
+reportsService.ts               — API calls to list, filter, generate, and download reports
+roleService.ts                   — CRUD API calls for roles and role options (permissions/menu access)
+slaConfigurationsService.ts    — CRUD API calls for SLA configurations and their dispute reasons
+slaRuleService.ts               — CRUD API calls for SLA rules plus fetching a ticket's SLA entries
+srStatusService.ts              — CRUD API calls for SR statuses
+ticketService.ts                 — API calls for tickets list, detail, assignment, messaging, and closing
+ticketTatRuleService.ts         — CRUD API calls for ticket TAT (turnaround time) rules
+transitionRuleService.ts        — CRUD API calls for department transition rules
+userService.ts                    — CRUD API calls for users, including filtered/paginated listing
+
+================================================================================
+src/api/  — Axios instance and endpoint constants
+================================================================================
+axiosInstance.ts               — Configures axios with httpOnly-cookie auth, encryption, and 401 refresh-queue interceptors
+endpoints.ts                    — Centralized map of all backend REST endpoint path builders (AUTH, DEPARTMENTS, PARTNERS, etc.)
+
+================================================================================
+src/types/  — TypeScript type/interface definitions (one file per domain)
+================================================================================
+agent.types.ts                 — Types for Agent entity and agents API response
+auth.types.ts                   — Types for auth views, user, login/OTP/captcha/forgot-password API responses
+cardType.types.ts               — Types for card types, issuers, and their CRUD request/response shapes
+dashboard.types.ts              — Types for dashboard stats, trend/pie chart points, SLA and ticket data
+department.types.ts             — Types for departments, escalation matrix entries, and department statuses
+disputeReasons.types.ts         — Types for dispute reasons, categories, and their CRUD payloads
+finding.types.ts                 — Types for department findings, documents, and chargeback records
+formField.types.ts               — Types/constants for dynamic form field config (form keys, sections, data types)
+holiday.types.ts                  — Types for holidays and their CRUD request/response shapes
+leaveManagement.types.ts         — Types for user availability/leave entries and calendar API responses
+log.types.ts                       — Types for log level and log entry shape sent to backend
+modal.types.ts                     — Shared prop types for the generic Modal component (size, actions, variants)
+navigation.types.ts               — Types for menu items and sidebar navigation groups/children
+partner.types.ts                   — Types for partners and their CRUD request/response shapes
+profile.types.ts                    — Types for SafeUser profile, notification preferences, and profile API responses
+raiseDispute.types.ts              — Types for lookup options and transaction/dispute form data in Raise Dispute flow
+report.types.ts                     — Types for report items, list params, filters, and generate-report payload
+role.types.ts                        — Types for roles, role/menu-access options, and role detail API responses
+slaConfigurations.types.ts          — Types for SLA configurations and their CRUD payloads/responses
+slaRule.types.ts                     — Types for SLA rules, anchor types, and ticket SLA entries
+srStatus.types.ts                    — Types for SR statuses and their add/edit form data
+ticket.types.ts                       — Types for ticket status enum, ticket list items, filters, and ticket detail
+ticketTatRule.types.ts               — Types for ticket TAT rules (network, domestic, days) and their form data
+transitionRule.types.ts              — Types for department transition rules and their add/edit form data
+user.types.ts                          — Types for users (with nested role/department/partner/manager refs) and filters
+
+================================================================================
+src/utils/  — Pure utility/helper functions
+================================================================================
+apiError.ts                    — Normalizes axios/unknown errors into a consistent ApiError shape
+authUtils.ts                    — Clears stale auth storage keys and stores pending post-redirect toast messages
+cookies.ts                       — Get/set/delete helpers for plain (non-httpOnly) client-managed cookies
+crypto.ts                         — AES-GCM encrypt/decrypt helpers for payload encryption using hex keys
+dateUtils.ts                      — Formats ISO dates into display strings (datetime, date-only, relative time)
+encryptionConfig.ts               — Reads/validates VITE_ payload-encryption env flag and hex key
+inputFilters.ts                    — Keystroke input filters/regex patterns for name, alphanumeric, digits, email fields
+maskEmail.ts                        — Masks the local part of an email address for display
+routeUtils.ts                        — Helpers to determine CX/admin role and default ticket routes based on menu access
+
+================================================================================
+src/constants/  — Shared constant values
+================================================================================
+dashboard.ts                    — Color palettes and series/segment configs for dashboard charts
+formOptions.ts                   — Shared dropdown option constants and boolean<->label mapping helpers for forms
+
+================================================================================
+src/data/navigation/  — Static navigation/menu config data
+================================================================================
+menuConfig.ts                   — Maps menu codes to routes/icons and groups ticket/settings items into nav groups
+adminMenu.json                   — Static list of admin role's menu items (code, label, description)
+agentMenu.json                    — Static list of agent role's menu items (code, label, description)
+moderatorMenu.json                — Static list of moderator role's menu items (code, label, description)
+
+================================================================================
+src/components/  — Shared/root-level components (not tied to one page)
+================================================================================
+CustomRangePicker.tsx           — Custom date-range picker with calendar dropdown and preset ranges (Today, Last 7 Days, etc.)
+DataTable.tsx                     — Generic sortable/paginated data table component with client and server-side pagination modes
+DatePicker.tsx                     — Single-date calendar picker input with portal-rendered dropdown
+DisputeReasonPicker.tsx           — Checkbox-style button grid for selecting a dispute reason
+FetchSelect.tsx                     — Select dropdown that async-fetches its own options with loading/error/retry states
+Layout.tsx                           — App shell: sidebar navigation, header, search, and logout modal wrapping route Outlet
+Logo.tsx                              — Federal Bank logo image wrapper component
+MultiSelect.tsx                       — Multi-value searchable select dropdown with portal-rendered options list
+Select.d.ts                            — TypeScript declaration file describing the Select component's props
+Select.tsx                              — Searchable single-select dropdown component with clear/loading states
+StatCard.tsx                             — Dashboard stat card showing a labeled numeric value with icon, loading/error states, optional link
+TicketCard.tsx                            — Card view of a single ticket with status, checkbox selection, and detail link
+TicketTableColumns.tsx                    — Shared DataTable column definitions and date formatter for ticket lists
+Tooltip.tsx                                — Hover tooltip wrapper with auto-flip positioning, rendered via portal
+
+src/components/common/  — Generic reusable UI building blocks used across all modules
+  AddButton.tsx                    — Primary "Add" button with plus icon, memoized
+  AuthErrorFallback.tsx             — Full-page error fallback shown when the login page fails to load
+  ChartError.tsx                     — Reusable centered error state (icon, message, retry button) for charts/cards
+  CodeInput.tsx                       — Uppercase entity-code text input restricting to letters/numbers/underscore
+  ConfirmDeleteModal.tsx               — Reusable danger confirmation modal for delete/deactivate actions
+  ConnectivityOverlay.tsx               — Global overlay shown when backend is unreachable; auto-recovers via polling
+  CrudTableCard.tsx                      — Standard CRUD list shell combining DataTable, error, and empty states
+  DeleteButton.tsx                        — Small danger "Delete" icon button
+  DetailRow.tsx                            — Label/value row with truncation and tooltip, used in detail cards
+  EditButton.tsx                            — Small secondary "Edit" icon button
+  EmptyState.tsx                             — Reusable centered empty-state placeholder (icon, title, description)
+  ErrorBoundary.tsx                           — React class error boundary that logs errors and renders a fallback
+  FormInput.tsx                                — Labeled text input wrapper with hint/error support
+  FormTextarea.tsx                              — Labeled textarea wrapper with character counter/limit support
+  InlineMessage.tsx                              — Auto-dismissing inline error/success/warning message banner
+  ModalPopup.tsx                                  — Generic modal dialog with configurable size, icon, and footer actions
+  PageErrorFallback.tsx                            — Full-page error fallback with reload button for route-level errors
+  ReportDownloadButton.tsx                          — Button to trigger a report download with loading spinner state
+  ReportFailedStatus.tsx                             — Badge/button showing report processing/failed status with retry action
+  StatusBadge.tsx                                     — Active/Inactive status pill badge
+  SubmitButton.tsx                                     — Primary form submit button with loading label/spinner
+  Toast.tsx                                             — Toast notification stack component with auto-dismiss and positioning
+  UnauthorizedAccess.tsx                                 — Full-screen "Access Restricted" page for missing menu permissions
+  ValidatedTextInput.tsx                                  — Free-typing text input showing live character-pattern validation error
+  makeActionsColumn.tsx                                    — Builds a trailing Edit/Delete actions column for DataTable
+
+src/components/dashboard/  — Dashboard page's chart/card subcomponents
+  DashboardFilters.tsx              — Dashboard header with title and department/agent filter selects
+  RecentTicketsTable.tsx             — Dashboard card listing recent tickets via DataTable
+  SlaAlerts.tsx                       — Dashboard card listing SLA-breached ticket alerts
+  SlaStatusChart.tsx                   — Pie chart card of SLA within/breached ticket counts with date range picker
+  StatsRow.tsx                          — Row of StatCards summarizing overall/open/in-progress/escalated ticket counts
+  TicketTrendChart.tsx                   — Line chart of daily ticket status trends with date range picker
+  TicketsByDepartment.tsx                 — Card showing ticket counts broken down by department with date range
+  TopDisputeReasons.tsx                    — Pie chart card of top dispute reasons with date range picker
+
+src/components/cardType/  — Card Types admin module components
+  AddCardTypeModal.tsx              — Modal form for creating a new card type
+  CardTypeForm.tsx                    — Card type name/code/issuer/status form fields shared by add/edit modals
+  EditCardTypeModal.tsx                — Modal form for editing an existing card type
+  cardTypeColumns.tsx                   — DataTable column definitions for the card type list
+
+src/components/department/  — Department Management admin module components
+  AddDepartmentModal.tsx             — Multi-step wizard modal for creating a department with target depts/SR statuses
+  DepartmentBadges.tsx                 — Department type text badge cell
+  DepartmentListCells.tsx               — Overflow-tooltip list cells for target departments/SR statuses in table
+  DeptForm.tsx                           — Department type/name/code/status form fields
+  EditDepartmentModal.tsx                 — Modal form for editing a department, target depts, and SR statuses
+  WizardSteps.tsx                          — Step indicator (1-2-3) for the add-department wizard modal
+  departmentColumns.tsx                     — DataTable column definitions for the department list
+  departmentOptions.ts                       — Helpers converting Department/SrStatus arrays into MultiSelect options
+
+src/components/disputeReason/  — Dispute Reasons admin module components
+  AddDisputeReasonModal.tsx          — Modal form for creating a dispute reason with documents-required config
+  DocumentsRequiredListEditor.tsx      — Editor for a reorderable list of required-document items
+  EditDisputeReasonModal.tsx            — Modal form for editing an existing dispute reason
+  disputeReasonColumns.tsx               — DataTable column definitions for the dispute reason list
+
+src/components/dynamicField/  — Admin-configured dynamic form field rendering (shared)
+  DynamicFieldRenderer.tsx           — Renders admin-configured dynamic form fields for a given form/section
+
+src/components/findings/  — Department findings workflow component
+  DepartmentFindings.tsx             — Department finding/chargeback workflow form with document upload and dynamic fields
+
+src/components/formField/  — Form Field Management admin module components
+  AddFormFieldModal.tsx              — Modal form for creating a new dynamic form field definition
+  EditFormFieldModal.tsx               — Modal form for editing an existing dynamic form field definition
+  FormFieldColumns.tsx                  — DataTable column definitions for the form field list
+  FormFieldForm.tsx                      — Form/section/field-key/data-type/department fields for form field add/edit
+
+src/components/holiday/  — Holiday Management admin module components
+  AddHolidayModal.tsx                — Modal form for creating a new holiday entry
+  EditHolidayModal.tsx                 — Modal form for editing an existing holiday entry
+  HolidayColumns.tsx                    — DataTable column definitions for the holiday list
+  HolidayForm.tsx                        — Holiday date/description form fields shared by add/edit modals
+
+src/components/layout/
+  AuthWrapper.tsx                    — Wraps AuthScreen in an ErrorBoundary with an auth-specific fallback
+
+src/components/leaveManagement/  — Leave Management module components
+  EditLeaveModal.tsx                  — Modal for editing a leave/week-off record's type and saving changes
+  LeaveCalendarGrid.tsx                — Month calendar grid with day selection, showing leave/week-off records per date
+  LeaveRecordsTable.tsx                 — DataTable of leave records for selected dates with edit/delete actions
+  MarkLeaveModal.tsx                     — Modal to mark leave/week-off for selected dates and chosen users
+  UserPickerList.tsx                      — Searchable, selectable list of users for leave assignment
+  leaveColumns.tsx                         — Column defs for the leave records DataTable (user, date, type, actions)
+  leaveManagementUtils.ts                   — Date/name formatting helpers and day/month constants for leave management
+
+src/components/partner/  — Partner Management admin module components
+  AddPartnerModal.tsx                 — Modal for creating a new partner via PartnerForm with name/code validation
+  EditPartnerModal.tsx                  — Modal for editing an existing partner via PartnerForm
+  PartnerForm.tsx                         — Shared form fields (name, code, status) for add/edit partner modals
+  partnerColumns.tsx                       — Column defs for the partners DataTable (name, code, status, actions)
+
+src/components/profile/  — Profile page card components
+  ChangePasswordCard.tsx              — Card with current/new/confirm password fields and visibility toggles
+  NotificationPreferencesCard.tsx       — Read-only display card for notification preference toggles
+  ProfileSettingsCard.tsx                — Card for editing profile fields (first/last name, mobile number)
+  RoleAccessCard.tsx                       — Displays the user's role and formatted permission badges
+
+src/components/raiseDispute/  — Raise Dispute form section components
+  DisputeDetailsSection.tsx           — Dispute reason, description, and file-upload section of raise-dispute form
+  DosAndDontsSection.tsx                — Collapsible list of dos/don'ts guidance shown on the raise-dispute page
+  ReviewSummarySection.tsx               — Read-only summary review of transaction/dispute data before submission
+  TransactionDetailsSection.tsx           — Transaction detail fields (txn type, network, SR type, etc.) for raise-dispute form
+
+src/components/reports/  — Reports page components
+  GenerateReportModal.tsx             — Modal to name and trigger generation of a new report
+  ReportFiltersBar.tsx                  — Filter bar (date range, amount, type, status, agent) for report generation
+  ReportsTable.tsx                       — DataTable listing generated reports with download/retry actions
+  reportColumns.tsx                       — Column defs for reports table (name, generated date, download/retry actions)
+
+src/components/role/  — Role Management admin module components
+  AddRoleModal.tsx                    — Modal for creating a new role via RoleForm with menu/permission selection
+  EditRoleModal.tsx                     — Modal for editing an existing role via RoleForm
+  MenuAccessSection.tsx                  — Accordion UI for selecting per-menu permissions and reordering menu access
+  RoleForm.tsx                            — Shared role fields (name, code, status, description) plus MenuAccessSection
+  RoleMenuAccessCell.tsx                   — Table cell showing a role's menu list with hover tooltip of permissions
+  permissionLabel.ts                        — Resolves a permission code to its display label
+  roleColumns.tsx                            — Column defs for the roles DataTable (name, description, menu access, actions)
+
+src/components/sla/
+  ManageDrawer.tsx                    — Drawer for managing an SLA configuration's settings and its rule steps
+
+src/components/slaConfiguration/  — SLA Configuration admin module components
+  AddSLAConfigModal.tsx               — Modal for creating a new SLA configuration (name, dispute type, tag)
+  slaConfigurationColumns.tsx           — Column defs for SLA configurations DataTable
+
+src/components/srStatus/  — SR Status Management admin module components
+  AddSrStatusModal.tsx                — Modal for creating a new SR status (label, code, sequence)
+  EditSrStatusModal.tsx                 — Modal for editing an existing SR status
+  srStatusColumns.tsx                    — Column defs for SR statuses DataTable (name, code, status, actions)
+
+src/components/ticket/
+  TicketSlaTimeline.tsx               — Renders a ticket's SLA step timeline with status badges/icons
+
+src/components/ticketTatRule/  — Ticket TAT Rules admin module components
+  AddTicketTatRuleModal.tsx           — Modal for creating a new ticket TAT rule via TicketTatRuleForm
+  EditTicketTatRuleModal.tsx            — Modal for editing an existing ticket TAT rule
+  TicketTatRuleForm.tsx                  — Shared TAT rule fields (network, domestic, tag, status)
+  ticketTatRuleColumns.tsx                — Column defs for TAT rules DataTable (tag, network, domestic, etc.)
+
+src/components/transitionRule/  — Transition Rules Management admin module components
+  AddTransitionRuleModal.tsx          — Modal for creating a new department transition rule
+  EditTransitionRuleModal.tsx           — Modal for editing an existing transition rule
+  constants.ts                           — Strategy/notify option lists and fetchFn wrappers plus strategy label map
+  transitionRuleColumns.tsx               — Column defs for transition rules DataTable (source dept, SR status, etc.)
+
+src/components/user/  — User Management admin module components
+  AddUserModal.tsx                     — Modal for creating a new user via UserForm with role/department/manager fields
+  EditUserModal.tsx                      — Modal for editing an existing user via UserForm
+  UserFiltersBar.tsx                       — Filter bar (search, department, role, status) for the users table
+  UserForm.tsx                              — Shared user fields (name, email, role, department, manager, status)
+  UserStatusBadge.tsx                        — Three-state badge (Active/Pending/Inactive) for user status
+  UserTable.tsx                               — DataTable wrapper for users list with pagination/load-more and empty states
+  userColumns.tsx                              — Column defs for users DataTable with edit/deactivate/resend-activation actions

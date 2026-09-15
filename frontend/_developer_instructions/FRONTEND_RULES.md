@@ -1,0 +1,29 @@
+**Coding standards and best practices**
+- Create reusable components -  Any component across the project seems to be repeating two or more times make it reusable component.
+- Application should be responsive. for now we need only for laptop and desktop kind of screen sizes. but also make it device specific responsive.
+- Use Typescript for type safety. do not use plain js. only use in required and ignorable situations.
+- Use react hooks, custom hooks. Think which hook is more suitable over one other. For example decide useState or useReducer which ever suitable based on the component context. do not over engineer. simplicity is always better.
+- Always maintain error boundaries for the components.
+- Show fallback ui in case of any breakdowns or exceptions. application should never go blank. show something or other always.
+- In case of any breakdown application should capture the stack trace and show logs, exact place where the application broken or stopped. also sending logs to backend by sending an api request. Maintaining logs are important.
+- A component should always be responsible only for UI. data handling and business logic should be outside of the component.separate UI and data fetching, calculations etc.
+- Application should always feel smooth for users.
+- Create optimization any where needed.
+- Always follow the given references, images. suggest before when doing your own things.
+- Maintain application theme, colors, fonts same as in the references given.
+- Screens for all the modules already created in html format. Need to bring them into React with proper navigation,
+state management, routing, api integration, testing, error logging etc.
+- Easy to scale, develop feature, debug in the future.
+- Focus management: when a overlap modal popup shows, the focus with tab button tapping should never leave the modal popup. or go behind the modal popup. etc implement focus management.
+- Accessibility rich internet elements. meaning use aria attributes whenever needed so that screen readers will properly know the context. but don't over use them, use only when needed. first priority always to the native HTML elements.
+- Search engines should easily access website.
+- Component re-rendering: use optimization hooks to reduce component re-rendering un necessarily.
+- Always keep in mind about LCP, CLS, INP concepts in mind while designing.
+- Always using HTML element hirarchy. using H1,H2,H3 and so on tags in the proper hirarchy. so that search engines could easily understand.
+- Always use semantic HTML elements for better code maintaining but do not overuse them.
+- Code splitting. do not write 1000 lines of code in single file. instead split them and maintain them in a proper folders for easy understanding and accessing.
+- Never store jwt tokens or auth tokens in the local storage. instead use http cookies.
+- Always encrypt the request and response so that no response and response should be read other than in local dev. in local dev maintain a flag which instantly disable this feature.
+- Use Debouncing, Throttling concepts to avoid unnecessary api calls. use only when required.
+- Use preload, prefetch, preconnect, defer etc concepts required in index.html
+- Use protected routes to wrap components which ever needed the access tokens.
