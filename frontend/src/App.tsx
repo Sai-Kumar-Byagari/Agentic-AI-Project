@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from './redux/store';
 import { selectIsAuthenticated } from './redux/slices/authSlice';
 import AuthScreen from './pages/AuthScreen';
-import Dashboard from './pages/Dashboard';
+import AppLayout from './pages/AppLayout';
 
 // Protected route wrapper
 interface ProtectedRouteProps {
@@ -29,24 +29,34 @@ export default function App() {
         {/* Auth Routes */}
         <Route
           path="/login"
-          element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <AuthScreen />}
+          element={isAuthenticated ? <Navigate to="/app/investigate" replace /> : <AuthScreen />}
         />
 
-        {/* Dashboard Routes */}
+        {/* App Routes (multi-screen layout) */}
+        <Route
+          path="/app/*"
+          element={
+            <ProtectedRoute>
+              <AppLayout />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Legacy redirect for backward compatibility */}
         <Route
           path="/dashboard"
           element={
             <ProtectedRoute>
-              <Dashboard />
+              <AppLayout />
             </ProtectedRoute>
           }
         />
 
         {/* Root redirect */}
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/" element={<Navigate to="/app/investigate" replace />} />
 
         {/* 404 */}
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        <Route path="*" element={<Navigate to="/app/investigate" replace />} />
       </Routes>
     </Router>
   );
