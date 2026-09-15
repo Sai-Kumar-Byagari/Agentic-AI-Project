@@ -697,7 +697,7 @@ If `VITE_ENCRYPTION_KEY` environment variable is set in frontend:
 7. **WebSocket Support:** Will real-time updates to KPIs or Attention Queue use WebSocket or polling?
 8. **API Versioning:** Should endpoints use URL versioning (e.g., /api/v1/auth/login)?
 
----
+--- for now backend is not ready.
 
 **Document Version:** 1.0  
 **Last Updated:** 2026-09-15  

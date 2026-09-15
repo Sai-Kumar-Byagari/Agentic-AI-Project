@@ -175,14 +175,14 @@ Building the authentication and dashboard modules for the Agentic AI Platform - 
 
 ## Open Questions
 
-1. **Backend API Ready?** Confirm login and dashboard endpoints exist (for mock data, we'll use hardcoded data in React for now)
-2. **Okta Configuration?** Need Okta tenant URL, client ID, redirect URI for SSO setup
-3. **Analytics?** Should login/dashboard interactions be tracked? If yes, what events?
-4. **Feature Flags?** Any gradual rollout or A/B testing on login or dashboard layouts?
-5. **Notifications?** Real-time updates to KPI metrics or Attention Queue? (WebSocket or polling?)
-6. **Search/Filter?** Dashboard search to filter runs by service, time window, status?
-7. **Export Functionality?** Can users export run data or audit logs from dashboard?
-8. **Role-Based Access?** Different dashboards for Responder vs Admin vs Security Reviewer roles?
+1. **Backend API Ready?** Confirm login and dashboard endpoints exist (for mock data, we'll use hardcoded data in React for now) --currently no backend and api's are ready so create your own api path and request/response modals i will handover the same to backend.
+2. **Okta Configuration?** Need Okta tenant URL, client ID, redirect URI for SSO setup --not sure on this currently but this is needed.
+3. **Analytics?** Should login/dashboard interactions be tracked? If yes, what events? --no, will let you know if needed further.
+4. **Feature Flags?** Any gradual rollout or A/B testing on login or dashboard layouts? --no testing for now.
+5. **Notifications?** Real-time updates to KPI metrics or Attention Queue? (WebSocket or polling?) --not sure on this for now.
+6. **Search/Filter?** Dashboard search to filter runs by service, time window, status? --yes
+7. **Export Functionality?** Can users export run data or audit logs from dashboard? --yes
+8. **Role-Based Access?** Different dashboards for Responder vs Admin vs Security Reviewer roles? --yes
 
 ## Testing Guidelines
 
