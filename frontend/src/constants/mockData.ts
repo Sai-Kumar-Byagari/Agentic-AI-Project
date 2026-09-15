@@ -249,3 +249,76 @@ export const mockRecentRunsResponse: RecentRunsResponse = {
     ],
   },
 };
+
+// Mock Investigation - Quick Start Suggestions
+export const mockInvestigationSuggestions = [
+  {
+    id: 'suggest_1',
+    tag: 'LATENCY',
+    text: 'Why did checkout service p99 latency spike to 800ms around 14:20?',
+    meta: '2h ago · high priority',
+  },
+  {
+    id: 'suggest_2',
+    tag: 'ERROR_RATE',
+    text: 'Is the current payment processing error rate (0.8%) unusual?',
+    meta: '8m ago · customer reported',
+  },
+  {
+    id: 'suggest_3',
+    tag: 'DEPLOYMENT',
+    text: 'Did the 13:45 API gateway deploy cause the traffic spike?',
+    meta: '45m ago · monitoring alert',
+  },
+];
+
+// Mock Investigation - Timeline Events
+export const mockInvestigationTimeline = [
+  {
+    id: 'event_1',
+    label: 'METRICS',
+    text: 'Found checkout service showing 95th percentile latency spike to 842ms at 14:20 UTC',
+    meta: '2.1s',
+    detail: 'Query latency spike correlates with database connection pool exhaustion. 87 of 100 connections active.',
+  },
+  {
+    id: 'event_2',
+    label: 'LOGS',
+    text: 'Identified 247 "slow query" log entries in PostgreSQL logs during the spike window',
+    meta: '3.4s',
+    detail: 'Most queries were SELECT operations on transactions table with complex JOIN conditions.',
+  },
+  {
+    id: 'event_3',
+    label: 'TRACES',
+    text: 'Distributed trace analysis shows database wait time accounts for 76% of total latency',
+    meta: '1.8s',
+  },
+  {
+    id: 'event_4',
+    label: 'DEPLOYS',
+    text: 'Matched spike timing to transaction-service deployment at 14:15 UTC',
+    meta: '0.9s',
+    detail: 'Version 2.3.4 added new analytics query that runs on every transaction creation.',
+  },
+];
+
+// Mock Investigation - Answer
+export const mockInvestigationAnswer = {
+  id: 'answer_1',
+  question: 'Why did checkout service latency spike around 14:20?',
+  runId: 'run_abc123',
+  verdict: 'verified',
+  text: 'The checkout service latency spike was caused by a new analytics query introduced in the 14:15 transaction-service deployment (v2.3.4). This query runs synchronously on every transaction creation, adding 50-150ms to each request under normal load. At 14:20, payment volume spiked 23% above baseline, exhausting the PostgreSQL connection pool and amplifying the latency impact to 800ms for some requests.',
+  claims: [
+    { id: 'claim_1', text: 'Latency spike correlates directly with transaction-service v2.3.4 deployment', verdict: 'verified' },
+    { id: 'claim_2', text: 'Root cause is the new analytics query on transaction creation', verdict: 'verified' },
+    { id: 'claim_3', text: 'Connection pool exhaustion amplified impact during peak traffic', verdict: 'verified' },
+  ],
+  observations: [
+    { id: 'obs_1', name: 'P99 Latency', source: 'Prometheus', type: 'metric' },
+    { id: 'obs_2', name: 'Slow Queries', source: 'PostgreSQL Logs', type: 'log' },
+    { id: 'obs_3', name: 'Database Wait Time', source: 'Jaeger', type: 'trace' },
+    { id: 'obs_4', name: 'Deployment Event', source: 'ArgoCD', type: 'event' },
+  ],
+};

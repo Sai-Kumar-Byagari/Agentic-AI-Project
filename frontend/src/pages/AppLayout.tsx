@@ -8,14 +8,15 @@ import { getUTCTimeString } from '../utils/dateUtils';
 import { ErrorBoundary } from '../components/common/ErrorBoundary';
 import { selectActiveTab, setActiveTab } from '../redux/slices/appSlice';
 import { RootState } from '../redux/store';
+import InvestigationScreen from './screens/InvestigationScreen';
 
-// Placeholder screen components (will be replaced with actual screens in Phase 2-3)
+// Placeholder screen components (will be replaced with actual screens in Phase 3)
 const PlaceholderScreen: React.FC<{ name: string }> = ({ name }) => (
   <div style={{ padding: '30px', textAlign: 'center', color: COLORS.textSecondary }}>
     <h2 style={{ fontSize: '24px', color: COLORS.textPrimary, marginBottom: '10px' }}>
       {name} Screen
     </h2>
-    <p>Coming in Phase 2-3</p>
+    <p>Coming in Phase 3</p>
   </div>
 );
 
@@ -55,7 +56,7 @@ export default function AppLayout() {
   const renderActiveScreen = () => {
     switch (activeTab) {
       case 'investigate':
-        return <PlaceholderScreen name="Investigation" />;
+        return <InvestigationScreen />;
       case 'runs':
         return <PlaceholderScreen name="Runs" />;
       case 'memory':
@@ -67,7 +68,7 @@ export default function AppLayout() {
       case 'audit':
         return <PlaceholderScreen name="Audit" />;
       default:
-        return <PlaceholderScreen name="Investigation" />;
+        return <InvestigationScreen />;
     }
   };
 
