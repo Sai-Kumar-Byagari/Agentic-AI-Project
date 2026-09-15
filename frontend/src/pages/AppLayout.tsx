@@ -9,16 +9,11 @@ import { ErrorBoundary } from '../components/common/ErrorBoundary';
 import { selectActiveTab, setActiveTab } from '../redux/slices/appSlice';
 import { RootState } from '../redux/store';
 import InvestigationScreen from './screens/InvestigationScreen';
-
-// Placeholder screen components (will be replaced with actual screens in Phase 3)
-const PlaceholderScreen: React.FC<{ name: string }> = ({ name }) => (
-  <div style={{ padding: '30px', textAlign: 'center', color: COLORS.textSecondary }}>
-    <h2 style={{ fontSize: '24px', color: COLORS.textPrimary, marginBottom: '10px' }}>
-      {name} Screen
-    </h2>
-    <p>Coming in Phase 3</p>
-  </div>
-);
+import RunsScreen from './screens/RunsScreen';
+import MemoryScreen from './screens/MemoryScreen';
+import IntegrationsScreen from './screens/IntegrationsScreen';
+import SettingsScreen from './screens/SettingsScreen';
+import AuditScreen from './screens/AuditScreen';
 
 export default function AppLayout() {
   const navigate = useNavigate();
@@ -58,15 +53,15 @@ export default function AppLayout() {
       case 'investigate':
         return <InvestigationScreen />;
       case 'runs':
-        return <PlaceholderScreen name="Runs" />;
+        return <RunsScreen />;
       case 'memory':
-        return <PlaceholderScreen name="Memory" />;
+        return <MemoryScreen />;
       case 'integrations':
-        return <PlaceholderScreen name="Integrations" />;
+        return <IntegrationsScreen />;
       case 'settings':
-        return <PlaceholderScreen name="Settings" />;
+        return <SettingsScreen />;
       case 'audit':
-        return <PlaceholderScreen name="Audit" />;
+        return <AuditScreen />;
       default:
         return <InvestigationScreen />;
     }
