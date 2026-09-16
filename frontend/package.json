@@ -1,0 +1,61 @@
+{
+  "name": "agentic-ai-platform",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Agentic AI Platform - On-call Automation System Frontend",
+  "author": "Agentic AI Team",
+  "scripts": {
+    "dev": "vite --port 3001",
+    "local": "vite --port 3001 --mode development",
+    "qa": "vite --port 3001 --mode qa",
+    "staging": "vite --port 3003 --mode staging",
+    "prod": "vite --port 3001 --mode production",
+    "build": "vite build --mode production",
+    "build:qa": "vite build --mode qa",
+    "build:staging": "vite build --mode staging",
+    "build:dev": "vite build --mode development",
+    "preview": "vite preview",
+    "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
+    "type-check": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@reduxjs/toolkit": "^2.12.0",
+    "@tailwindcss/vite": "^4.2.4",
+    "axios": "^1.16.1",
+    "lucide-react": "^1.14.0",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
+    "react-is": "^19.2.6",
+    "react-redux": "^9.3.0",
+    "react-router-dom": "^7.14.2",
+    "recharts": "^3.8.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@tailwindcss/postcss": "^4.3.3",
+    "@testing-library/jest-dom": "^7.0.0",
+    "@testing-library/react": "^16.3.2",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "autoprefixer": "^10.5.0",
+    "eslint": "^10.2.1",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "globals": "^17.5.0",
+    "jsdom": "^30.0.1",
+    "postcss": "^8.5.12",
+    "tailwindcss": "^4.2.4",
+    "terser": "^5.51.2",
+    "typescript": "^6.0.3",
+    "vite": "^8.0.10",
+    "vitest": "^4.1.10"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}
