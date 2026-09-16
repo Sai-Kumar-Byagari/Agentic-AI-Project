@@ -1,144 +1,45 @@
-import React, { useState } from 'react';
-import { COLORS } from '../../constants/colors';
+import React from 'react';
+import { css } from '../../utils/css';
+import { toneStyle } from '../../constants/designSystem';
+import { labelTone, spineStyleFor, type TimelineView } from '../../hooks/useInvestigation';
 
-interface TimelineItemProps {
-  id: string;
-  label: string;
-  text: string;
-  meta: string;
-  detail?: string;
-  spineColor?: string;
-}
+const ROW_STYLE = css(
+  'display:flex; min-width:0; background:#FFFFFF; border:1px solid rgba(35,29,40,.10); ' +
+    'border-radius:12px; overflow:hidden; animation:v3rise .26s ease-out both;'
+);
 
-export const TimelineItem: React.FC<TimelineItemProps> = ({
-  id,
-  label,
-  text,
-  meta,
-  detail,
-  spineColor = COLORS.primary,
-}) => {
-  const [expanded, setExpanded] = useState(false);
+const BODY_STYLE = css(
+  'flex:1; min-width:0; display:flex; flex-direction:column; gap:7px; padding:13px 16px;'
+);
 
-  return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'flex-start',
-        gap: '0',
-        background: '#FFFFFF',
-        border: `1px solid ${COLORS.border}`,
-        borderRadius: '12px',
-        padding: '0',
-        marginBottom: '9px',
-        overflow: 'hidden',
-      }}
-    >
-      {/* Spine (left colored bar) */}
-      <span
-        style={{
-          width: '3px',
-          height: '100%',
-          background: spineColor,
-          flex: 'none',
-          minHeight: '100px',
-        }}
-      ></span>
+const HEAD_STYLE = css('display:flex; flex-wrap:wrap; align-items:center; gap:7px 11px; min-width:0;');
 
-      {/* Content */}
-      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '7px', padding: '13px 16px' }}>
-        {/* Header row with label, text, and meta */}
-        <div
-          style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            alignItems: 'center',
-            gap: '7px 11px',
-            minWidth: 0,
-          }}
-        >
-          {/* Label Badge */}
-          <span
-            style={{
-              fontFamily: "'IBM Plex Mono', monospace",
-              fontSize: '10px',
-              letterSpacing: '.07em',
-              color: '#FFFFFF',
-              background: spineColor,
-              borderRadius: '5px',
-              padding: '3px 7px',
-              flex: 'none',
-              textTransform: 'uppercase',
-            }}
-          >
-            {label}
-          </span>
+const TEXT_STYLE = css('flex:1; min-width:170px; font-size:13.5px; line-height:1.55; color:#33383C;');
 
-          {/* Main text */}
-          <span
-            style={{
-              flex: '1',
-              minWidth: '170px',
-              fontSize: '13.5px',
-              lineHeight: '1.55',
-              color: '#33383C',
-            }}
-          >
-            {text}
-          </span>
+const META_STYLE = css(
+  "font-family:'IBM Plex Mono',monospace; font-size:10px; color:#9A93A0; flex:none;"
+);
 
-          {/* Meta (time) */}
-          <span
-            style={{
-              fontFamily: "'IBM Plex Mono', monospace",
-              fontSize: '10px',
-              color: '#9A93A0',
-              flex: 'none',
-            }}
-          >
-            {meta}
-          </span>
-        </div>
+const DETAIL_STYLE = css(
+  "font-family:'IBM Plex Mono',monospace; font-size:11px; line-height:1.6; color:#6B6473; " +
+    'background:#FBFAFC; border:1px solid rgba(35,29,40,.08); border-radius:8px; padding:9px 11px; ' +
+    'white-space:pre-wrap; word-break:break-word;'
+);
 
-        {/* Detail section (expandable) */}
-        {detail && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
-            <button
-              type="button"
-              onClick={() => setExpanded(!expanded)}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: spineColor,
-                fontSize: '11px',
-                fontWeight: 500,
-                cursor: 'pointer',
-                padding: '0',
-                textAlign: 'left',
-                fontFamily: "'Public Sans', sans-serif",
-              }}
-            >
-              {expanded ? '▼ Hide details' : '▶ Show details'}
-            </button>
-
-            {expanded && (
-              <div
-                style={{
-                  fontSize: '12.5px',
-                  color: COLORS.textSecondary,
-                  lineHeight: '1.6',
-                  background: 'rgba(35,29,40,.04)',
-                  borderRadius: '8px',
-                  padding: '10px 12px',
-                  borderLeft: `2px solid ${spineColor}`,
-                }}
-              >
-                {detail}
-              </div>
-            )}
-          </div>
-        )}
+/**
+ * A single investigation timeline row (reference row markup). Presentational:
+ * the colour of the spine and the label badge are derived from the step kind.
+ */
+export const TimelineRow: React.FC<{ event: TimelineView }> = ({ event }) => (
+  <div style={ROW_STYLE}>
+    <span style={spineStyleFor(event.kind)}></span>
+    <div style={BODY_STYLE}>
+      <div style={HEAD_STYLE}>
+        {event.label ? <span style={toneStyle(labelTone(event.kind))}>{event.label}</span> : null}
+        <span style={TEXT_STYLE}>{event.text}</span>
+        {event.meta ? <span style={META_STYLE}>{event.meta}</span> : null}
       </div>
+      {event.detail ? <div style={DETAIL_STYLE}>{event.detail}</div> : null}
     </div>
-  );
-};
+  </div>
+);

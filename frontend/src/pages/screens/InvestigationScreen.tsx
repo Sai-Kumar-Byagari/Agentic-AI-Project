@@ -1,457 +1,377 @@
-import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { COLORS } from '../../constants/colors';
-import { TimelineItem } from '../../components/investigation/TimelineItem';
-import {
-  mockInvestigationSuggestions,
-  mockInvestigationTimeline,
-  mockInvestigationAnswer,
-} from '../../constants/mockData';
-import { selectInvestigation, setInvestigationState, startInvestigation, setTimeline } from '../../redux/slices/appSlice';
-import { RootState } from '../../redux/store';
+import { useDispatch } from 'react-redux';
+import { css } from '../../utils/css';
+import { C, toneStyle } from '../../constants/designSystem';
+import { consoleService } from '../../services/consoleService';
+import { useInvestigation } from '../../hooks/useInvestigation';
+import { TimelineRow } from '../../components/investigation/TimelineItem';
+import { HoverButton } from '../../components/common/HoverButton';
+import { setActiveTab } from '../../redux/slices/appSlice';
+
+const SUGGESTIONS = consoleService.getSuggestions();
+
+// --- Static style objects (ported verbatim from the reference) ---
+const ROOT = css('flex:1; min-height:0; display:flex; flex-direction:column;');
+
+const SUBHEAD = css(
+  'flex:none; display:flex; flex-wrap:wrap; align-items:center; gap:10px 20px; padding:11px 22px; ' +
+    'background:#FBFAFC; border-bottom:1px solid rgba(35,29,40,.09);'
+);
+const SUBHEAD_COVERAGE = css('display:flex; align-items:center; gap:7px; flex:none;');
+const LABEL_CAP = css('font-size:10px; text-transform:uppercase; letter-spacing:.14em; color:#8B8391;');
+const SEG_ROW = css('display:flex; gap:3px;');
+const COVERAGE_LABEL = css("font-family:'IBM Plex Mono',monospace; font-size:11px; color:#4A4351;");
+const GATES_WRAP = css('display:flex; align-items:center; gap:7px; flex-wrap:wrap;');
+const BUDGET_WRAP = css('display:flex; align-items:center; gap:16px; flex-wrap:wrap;');
+const BUDGET_ITEM = css('display:flex; align-items:baseline; gap:6px;');
+const BUDGET_VALUE = css("font-family:'IBM Plex Mono',monospace; font-size:12px; color:#33253C;");
+const BUDGET_LABEL = css('font-size:10px; text-transform:uppercase; letter-spacing:.1em; color:#8B8391;');
+const FLEX1 = css('flex:1;');
+
+const SCROLL = css('flex:1; min-height:0; overflow-y:auto; padding:30px 24px 10px;');
+const COLUMN = css('max-width:800px; margin:0 auto; display:flex; flex-direction:column; gap:20px;');
+
+const IDLE_WRAP = css('display:flex; flex-direction:column; gap:26px; padding:34px 0 0;');
+const IDLE_HEAD = css('display:flex; flex-direction:column; gap:13px;');
+const IDLE_TITLE = css(
+  "font-family:'Spectral',Georgia,serif; font-size:clamp(28px,3.4vw,40px); font-weight:300; " +
+    'line-height:1.18; color:#241E29; text-wrap:pretty;'
+);
+const IDLE_SUB = css(
+  'font-size:14.5px; line-height:1.7; color:#6B6473; max-width:560px; text-wrap:pretty;'
+);
+const IDLE_SUGG_WRAP = css('display:flex; flex-direction:column; gap:9px;');
+const SECTION_CAP = css('font-size:10px; text-transform:uppercase; letter-spacing:.15em; color:#8B8391;');
+
+const SUGG_BTN = css(
+  'display:flex; flex-wrap:wrap; align-items:center; gap:8px 13px; min-width:0; text-align:left; ' +
+    "background:#FFFFFF; border:1px solid rgba(35,29,40,.11); border-radius:12px; padding:15px 17px; " +
+    "color:#33383C; font-family:'Public Sans',sans-serif; font-size:13.5px; cursor:pointer;"
+);
+const SUGG_BTN_HOVER = css(
+  'border-color:rgba(90,66,112,.45); box-shadow:0 8px 22px -16px rgba(35,29,40,.35);'
+);
+const SUGG_TAG = css(
+  "font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.07em; color:#5A4270; " +
+    'background:rgba(90,66,112,.08); border-radius:5px; padding:3px 7px; flex:none;'
+);
+const SUGG_TEXT = css('flex:1; min-width:180px; color:#241E29;');
+const SUGG_META = css("font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#8B8391; flex:none;");
+
+const STARTED_WRAP = css('display:flex; flex-direction:column; gap:18px;');
+const QUESTION_CARD = css(
+  'display:flex; flex-direction:column; gap:9px; background:#FFFFFF; ' +
+    'border:1px solid rgba(35,29,40,.11); border-radius:14px; padding:18px 20px;'
+);
+const QUESTION_TEXT = css(
+  "font-family:'Spectral',Georgia,serif; font-size:21px; font-weight:400; line-height:1.4; " +
+    'color:#241E29; text-wrap:pretty;'
+);
+const QUESTION_META = css(
+  'display:flex; flex-wrap:wrap; gap:6px 12px; ' +
+    "font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#8B8391;"
+);
+const TIMELINE_WRAP = css('display:flex; flex-direction:column; gap:9px;');
+const BUSY_ROW = css('display:flex; align-items:center; gap:10px; padding:10px 4px;');
+const BUSY_DOT = css(
+  'width:7px; height:7px; border-radius:50%; background:#5A4270; animation:v3pulse 1.1s ease-in-out infinite;'
+);
+const BUSY_LABEL = css('font-size:12.5px; color:#6B6473;');
+
+const ANSWER_CARD = css(
+  'border:1px solid rgba(35,29,40,.12); border-radius:16px; background:#FFFFFF; overflow:hidden; ' +
+    'box-shadow:0 18px 44px -32px rgba(35,29,40,.4);'
+);
+const ANSWER_HEAD = css(
+  'display:flex; flex-wrap:wrap; align-items:center; gap:9px 13px; min-width:0; padding:15px 20px; ' +
+    'background:#FBFAFC; border-bottom:1px solid rgba(35,29,40,.09);'
+);
+const VERIFIED_BADGE = css(
+  'font-size:10.5px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:#3F7A52; ' +
+    'background:rgba(63,122,82,.09); border:1px solid rgba(63,122,82,.28); border-radius:999px; padding:4px 11px;'
+);
+const CONFIDENCE = css('font-size:12px; color:#6B6473;');
+const CONFIDENCE_VAL = css("font-family:'IBM Plex Mono',monospace; color:#241E29;");
+const ANSWER_STAT = css("font-family:'IBM Plex Mono',monospace; font-size:10px; color:#9A93A0;");
+const ANSWER_BODY = css('padding:22px 22px 6px; display:flex; flex-direction:column; gap:14px;');
+const ANSWER_PARA = css(
+  "font-family:'Spectral',Georgia,serif; font-size:16px; font-weight:400; line-height:1.72; " +
+    'color:#2C2631; text-wrap:pretty;'
+);
+
+const CLAIMS_WRAP = css('display:flex; flex-direction:column; gap:2px; padding:16px 22px 6px;');
+const CLAIMS_CAP = css(
+  'font-size:10px; text-transform:uppercase; letter-spacing:.15em; color:#8B8391; padding-bottom:6px;'
+);
+const CLAIM_ROW = css(
+  'display:flex; flex-wrap:wrap; align-items:flex-start; gap:7px 12px; min-width:0; padding:10px 0; ' +
+    'border-top:1px solid rgba(35,29,40,.08);'
+);
+const CLAIM_TEXT = css('flex:1; min-width:170px; font-size:13px; line-height:1.55; color:#4A4351;');
+const CLAIM_CITE = css("font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#9A93A0; flex:none;");
+
+const EVID_WRAP = css('display:flex; flex-direction:column; gap:9px; padding:14px 22px 18px;');
+const EVID_GRID = css('display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:9px;');
+const EVID_CARD = css(
+  'border:1px solid rgba(35,29,40,.10); border-radius:10px; padding:11px 12px; display:flex; ' +
+    'flex-direction:column; gap:5px; background:#FBFAFC; min-width:0;'
+);
+const EVID_IDROW = css("display:flex; flex-wrap:wrap; gap:4px 8px; font-family:'IBM Plex Mono',monospace; font-size:10px;");
+const EVID_ID = css('color:#5A4270;');
+const EVID_TOOL = css('color:#9A93A0;');
+const EVID_SUMMARY = css('font-size:12px; line-height:1.5; color:#4A4351;');
+
+const ACTIONS = css(
+  'display:flex; flex-wrap:wrap; gap:9px; min-width:0; padding:14px 22px; ' +
+    'border-top:1px solid rgba(35,29,40,.09); background:#FBFAFC;'
+);
+const BTN_PRIMARY = css(
+  "background:#5A4270; border:none; border-radius:9px; padding:10px 16px; font-family:'Public Sans',sans-serif; " +
+    'font-size:12.5px; font-weight:600; color:#FFFFFF; cursor:pointer;'
+);
+const BTN_PRIMARY_HOVER = css('background:#4A3560;');
+const BTN_SECONDARY = css(
+  "background:#FFFFFF; border:1px solid rgba(35,29,40,.14); border-radius:9px; padding:10px 16px; " +
+    "font-family:'Public Sans',sans-serif; font-size:12.5px; color:#33383C; cursor:pointer;"
+);
+const BTN_SECONDARY_HOVER = css('border-color:rgba(35,29,40,.30);');
+const BTN_GHOST = css(
+  "background:transparent; border:none; padding:10px 4px; font-family:'Public Sans',sans-serif; " +
+    'font-size:12.5px; color:#8B8391; cursor:pointer;'
+);
+const BTN_GHOST_HOVER = css('color:#33253C;');
+
+const COMPOSER_WRAP = css(
+  'flex:none; padding:12px 24px 22px; ' +
+    'background:linear-gradient(180deg, rgba(245,242,244,0) 0%, #F5F2F4 45%);'
+);
+const COMPOSER_INNER = css('max-width:800px; margin:0 auto; display:flex; flex-direction:column; gap:8px;');
+const COMPOSER_BOX = css(
+  'display:flex; align-items:flex-end; gap:10px; min-width:0; background:#FFFFFF; ' +
+    'border:1px solid rgba(35,29,40,.13); border-radius:13px; padding:10px 10px 10px 16px; ' +
+    'box-shadow:0 10px 30px -24px rgba(35,29,40,.5);'
+);
+const TEXTAREA = css(
+  "flex:1; min-width:0; resize:none; background:transparent; border:none; outline:none; color:#241E29; " +
+    "font-family:'Public Sans',sans-serif; font-size:14px; line-height:1.6; padding:6px 0; max-height:120px;"
+);
+const COMPOSER_BTN = css(
+  "flex:none; background:#5A4270; border:none; border-radius:9px; padding:10px 17px; " +
+    "font-family:'Public Sans',sans-serif; font-size:12.5px; font-weight:600; color:#FFFFFF; cursor:pointer;"
+);
+const COMPOSER_BTN_HOVER = css('background:#4A3560;');
+const COMPOSER_HELP = css('font-size:11px; color:#8B8391; line-height:1.55;');
 
 export default function InvestigationScreen() {
   const dispatch = useDispatch();
-  const investigation = useSelector((state: RootState) => selectInvestigation(state));
-  const [busy, setBusy] = useState(false);
+  const inv = useInvestigation();
+  const openRuns = () => dispatch(setActiveTab('runs'));
 
-  // Simulate investigation flow with delays
-  const handleStartInvestigation = (question: string) => {
-    const runId = `run_${Math.random().toString(36).substr(2, 9)}`;
-
-    // Start investigation
-    dispatch(
-      startInvestigation({
-        question,
-        runId,
-      })
-    );
-
-    // Set as busy for a delay
-    setBusy(true);
-
-    // Simulate gathering evidence with timeline events
-    setTimeout(() => {
-      dispatch(
-        setInvestigationState({
-          timeline: mockInvestigationTimeline.map((e) => ({
-            ...e,
-            rowStyle: '',
-            spineStyle: '',
-            labelStyle: '',
-            detailStyle: '',
-          })),
-          busy: false,
-          busyLabel: '',
-        })
-      );
-      setBusy(false);
-    }, 2500);
-  };
-
-  // Idle State: Show prompt and suggestions
-  if (investigation.idle) {
-    return (
-      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '30px 24px 10px' }}>
-        <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          {/* Coverage bar - matching primary v3 design */}
-          <div
-            style={{
-              flex: 'none',
-              display: 'flex',
-              flexWrap: 'wrap',
-              alignItems: 'center',
-              gap: '10px 20px',
-              padding: '11px 22px',
-              background: '#FBFAFC',
-              borderBottom: `1px solid rgba(35,29,40,.09)`,
-            }}
-          >
-            {/* Coverage section with domain segments */}
-            <span style={{ display: 'flex', alignItems: 'center', gap: '7px', flex: 'none' }}>
+  return (
+    <div style={ROOT}>
+      {/* Coverage / gates / budget sub-header */}
+      <div style={SUBHEAD}>
+        <span style={SUBHEAD_COVERAGE}>
+          <span style={LABEL_CAP}>Coverage</span>
+          <span style={SEG_ROW}>
+            {inv.domains.map((d) => (
               <span
+                key={d.name}
+                title={d.name}
                 style={{
-                  fontSize: '10px',
-                  textTransform: 'uppercase',
-                  letterSpacing: '.14em',
-                  color: COLORS.textTertiary,
+                  width: '26px',
+                  height: '5px',
+                  borderRadius: '3px',
+                  background: d.covered ? C.good : 'rgba(35,29,40,.13)',
                 }}
-              >
-                Coverage
-              </span>
-              <span style={{ display: 'flex', gap: '3px' }}>
-                {[
-                  { name: 'Prometheus', bg: COLORS.success },
-                  { name: 'Logs', bg: COLORS.success },
-                  { name: 'Traces', bg: COLORS.success },
-                  { name: 'Deploys', bg: COLORS.success },
-                  { name: 'Code', bg: COLORS.danger },
-                ].map((domain) => (
-                  <span
-                    key={domain.name}
-                    style={{
-                      width: '8px',
-                      height: '8px',
-                      borderRadius: '2px',
-                      background: domain.bg,
-                    }}
-                    title={domain.name}
-                  ></span>
-                ))}
-              </span>
-              <span
-                style={{
-                  fontFamily: "'IBM Plex Mono', monospace",
-                  fontSize: '11px',
-                  color: '#4A4351',
-                }}
-              >
-                4 of 5 sources
-              </span>
-            </span>
-
-            {/* Gates section */}
-            <span style={{ display: 'flex', alignItems: 'center', gap: '7px', flexWrap: 'wrap' }}>
-              {[
-                { name: 'grounding', state: 'active', bg: 'rgba(63,122,82,.12)', fg: COLORS.success },
-                { name: 'evals', state: 'pass', bg: 'rgba(63,122,82,.12)', fg: COLORS.success },
-                { name: 'compliance', state: 'pass', bg: 'rgba(63,122,82,.12)', fg: COLORS.success },
-              ].map((gate) => (
-                <span
-                  key={gate.name}
-                  style={{
-                    fontSize: '10px',
-                    padding: '3px 8px',
-                    borderRadius: '4px',
-                    background: gate.bg,
-                    color: gate.fg,
-                    fontWeight: 500,
-                  }}
-                >
-                  {gate.name} · {gate.state}
-                </span>
-              ))}
-            </span>
-
-            {/* Spacer */}
-            <span style={{ flex: 1 }}></span>
-
-            {/* Budget section */}
-            <span style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
-              {[
-                { value: '50m', label: 'timeout' },
-                { value: '12', label: 'parallelism' },
-                { value: '2.1GB', label: 'memory' },
-              ].map((metric) => (
-                <span key={metric.label} style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-                  <span
-                    style={{
-                      fontFamily: "'IBM Plex Mono', monospace",
-                      fontSize: '12px',
-                      color: COLORS.deep,
-                    }}
-                  >
-                    {metric.value}
-                  </span>
-                  <span
-                    style={{
-                      fontSize: '10px',
-                      textTransform: 'uppercase',
-                      letterSpacing: '.1em',
-                      color: COLORS.textTertiary,
-                    }}
-                  >
-                    {metric.label}
-                  </span>
-                </span>
-              ))}
-            </span>
-          </div>
-
-          {/* Idle state content */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '26px', padding: '34px 0 0' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '13px' }}>
-              <span
-                style={{
-                  fontFamily: "'Spectral', Georgia, serif",
-                  fontSize: 'clamp(28px, 3.4vw, 40px)',
-                  fontWeight: 300,
-                  lineHeight: '1.18',
-                  color: COLORS.textPrimary,
-                }}
-              >
-                What would you like investigated?
-              </span>
-              <span
-                style={{
-                  fontSize: '14.5px',
-                  lineHeight: '1.7',
-                  color: COLORS.textSecondary,
-                  maxWidth: '560px',
-                }}
-              >
-                Name a service and a time window. The run gathers evidence across metrics, logs, traces, deploys and
-                code before any answer is released.
-              </span>
-            </div>
-
-            {/* Quick start suggestions */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '9px' }}>
-              <span
-                style={{
-                  fontSize: '10px',
-                  textTransform: 'uppercase',
-                  letterSpacing: '.15em',
-                  color: COLORS.textTertiary,
-                }}
-              >
-                Start from a recent question
-              </span>
-              {mockInvestigationSuggestions.map((s) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => handleStartInvestigation(s.text)}
-                  style={{
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    alignItems: 'center',
-                    gap: '8px 13px',
-                    minWidth: 0,
-                    textAlign: 'left',
-                    background: '#FFFFFF',
-                    border: `1px solid ${COLORS.border}`,
-                    borderRadius: '12px',
-                    padding: '15px 17px',
-                    color: '#33383C',
-                    fontFamily: "'Public Sans', sans-serif",
-                    fontSize: '13.5px',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(90,66,112,.45)';
-                    (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 8px 22px -16px rgba(35,29,40,.35)';
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.borderColor = COLORS.border;
-                    (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
-                  }}
-                >
-                  <span
-                    style={{
-                      fontFamily: "'IBM Plex Mono', monospace",
-                      fontSize: '10px',
-                      letterSpacing: '.07em',
-                      color: COLORS.primary,
-                      background: 'rgba(90,66,112,.08)',
-                      borderRadius: '5px',
-                      padding: '3px 7px',
-                      flex: 'none',
-                    }}
-                  >
-                    {s.tag}
-                  </span>
-                  <span style={{ flex: 1, minWidth: '180px', color: COLORS.textPrimary }}>
-                    {s.text}
-                  </span>
-                  <span
-                    style={{
-                      fontFamily: "'IBM Plex Mono', monospace",
-                      fontSize: '10.5px',
-                      color: COLORS.textTertiary,
-                      flex: 'none',
-                    }}
-                  >
-                    {s.meta}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Started State: Show timeline of events
-  if (investigation.started) {
-    return (
-      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '30px 24px 10px' }}>
-        <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          {/* Question card */}
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '9px',
-              background: '#FFFFFF',
-              border: `1px solid ${COLORS.border}`,
-              borderRadius: '14px',
-              padding: '18px 20px',
-            }}
-          >
-            <span
-              style={{
-                fontFamily: "'Spectral', Georgia, serif",
-                fontSize: '21px',
-                fontWeight: 400,
-                lineHeight: '1.4',
-                color: COLORS.textPrimary,
-              }}
-            >
-              {investigation.question}
-            </span>
-            <span
-              style={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: '6px 12px',
-                fontFamily: "'IBM Plex Mono', monospace",
-                fontSize: '10.5px',
-                color: COLORS.textTertiary,
-              }}
-            >
-              <span>run {investigation.runId}</span>
-              <span>intent ROOT_CAUSE</span>
-              <span>space payments</span>
-              <span>trigger CHAT</span>
-            </span>
-          </div>
-
-          {/* Timeline events */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '9px' }}>
-            {investigation.timeline.map((e) => (
-              <TimelineItem
-                key={e.id}
-                id={e.id}
-                label={e.label}
-                text={e.text}
-                meta={e.meta}
-                detail={e.detail}
-              />
+              ></span>
             ))}
+          </span>
+          <span style={COVERAGE_LABEL}>{inv.coverageLabel}</span>
+        </span>
 
-            {/* Busy indicator */}
-            {busy && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 4px' }}>
-                <span
-                  style={{
-                    width: '7px',
-                    height: '7px',
-                    borderRadius: '50%',
-                    background: COLORS.primary,
-                    animation: 'pulse 1.1s ease-in-out infinite',
-                  }}
-                ></span>
-                <span
-                  style={{
-                    fontSize: '12.5px',
-                    color: COLORS.textSecondary,
-                  }}
-                >
-                  Gathering evidence...
+        <span style={GATES_WRAP}>
+          {inv.gates.map((g) => (
+            <span key={g.name} style={toneStyle(g.tone)}>
+              {g.name} · {g.state}
+            </span>
+          ))}
+        </span>
+
+        <span style={FLEX1}></span>
+        <span style={BUDGET_WRAP}>
+          {inv.budget.map((b) => (
+            <span key={b.label} style={BUDGET_ITEM}>
+              <span style={BUDGET_VALUE}>{b.value}</span>
+              <span style={BUDGET_LABEL}>{b.label}</span>
+            </span>
+          ))}
+        </span>
+      </div>
+
+      {/* Scrollable investigation area */}
+      <div ref={inv.scrollRef} onScroll={inv.onScroll} style={SCROLL}>
+        <div style={COLUMN}>
+          {inv.idle && (
+            <div style={IDLE_WRAP}>
+              <div style={IDLE_HEAD}>
+                <span style={IDLE_TITLE}>What would you like investigated?</span>
+                <span style={IDLE_SUB}>
+                  Name a service and a time window. The run gathers evidence across metrics, logs, traces,
+                  deploys and code before any answer is released.
                 </span>
               </div>
-            )}
-          </div>
-
-          {/* Answer section - shown after timeline loads */}
-          {!busy && investigation.answer && (
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '16px',
-                background: '#FFFFFF',
-                border: `1px solid ${COLORS.border}`,
-                borderRadius: '14px',
-                padding: '20px',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                <span
-                  style={{
-                    fontFamily: "'Spectral', Georgia, serif",
-                    fontSize: '18px',
-                    fontWeight: 400,
-                    color: COLORS.textPrimary,
-                  }}
-                >
-                  Answer
-                </span>
-                <span
-                  style={{
-                    fontFamily: "'IBM Plex Mono', monospace",
-                    fontSize: '10px',
-                    textTransform: 'uppercase',
-                    letterSpacing: '.1em',
-                    color: investigation.answer.verdict === 'verified' ? COLORS.success : COLORS.danger,
-                  }}
-                >
-                  {investigation.answer.verdict}
-                </span>
-              </div>
-
-              <p
-                style={{
-                  fontSize: '13.5px',
-                  lineHeight: '1.7',
-                  color: COLORS.textPrimary,
-                  margin: 0,
-                }}
-              >
-                {investigation.answer.text}
-              </p>
-
-              {/* Claims */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <span
-                  style={{
-                    fontSize: '11px',
-                    fontWeight: 600,
-                    textTransform: 'uppercase',
-                    letterSpacing: '.1em',
-                    color: COLORS.textSecondary,
-                  }}
-                >
-                  Supporting Claims
-                </span>
-                {investigation.answer.claims.map((c) => (
-                  <div
-                    key={c.id}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'flex-start',
-                      gap: '8px',
-                      padding: '8px',
-                      background: 'rgba(35,29,40,.04)',
-                      borderRadius: '6px',
-                    }}
+              <div style={IDLE_SUGG_WRAP}>
+                <span style={SECTION_CAP}>Start from a recent question</span>
+                {SUGGESTIONS.map((s) => (
+                  <HoverButton
+                    key={s.text}
+                    type="button"
+                    onClick={() => inv.start(s.text)}
+                    baseStyle={SUGG_BTN}
+                    hoverStyle={SUGG_BTN_HOVER}
                   >
-                    <span
-                      style={{
-                        fontSize: '10px',
-                        textTransform: 'uppercase',
-                        fontWeight: 600,
-                        color: c.verdict === 'verified' ? COLORS.success : COLORS.danger,
-                        flex: 'none',
-                      }}
-                    >
-                      ✓
-                    </span>
-                    <span style={{ fontSize: '12px', color: COLORS.textPrimary, flex: 1 }}>
-                      {c.text}
-                    </span>
-                  </div>
+                    <span style={SUGG_TAG}>{s.tag}</span>
+                    <span style={SUGG_TEXT}>{s.text}</span>
+                    <span style={SUGG_META}>{s.meta}</span>
+                  </HoverButton>
                 ))}
               </div>
             </div>
           )}
+
+          {inv.started && (
+            <div style={STARTED_WRAP}>
+              <div style={QUESTION_CARD}>
+                <span style={QUESTION_TEXT}>{inv.question}</span>
+                <span style={QUESTION_META}>
+                  <span>run {inv.runId}</span>
+                  <span>intent ROOT_CAUSE</span>
+                  <span>space payments</span>
+                  <span>trigger CHAT</span>
+                </span>
+              </div>
+
+              <div style={TIMELINE_WRAP}>
+                {inv.timeline.map((e) => (
+                  <TimelineRow key={e.key} event={e} />
+                ))}
+                {inv.busy && (
+                  <div style={BUSY_ROW}>
+                    <span style={BUSY_DOT}></span>
+                    <span style={BUSY_LABEL}>{inv.busyLabel}</span>
+                  </div>
+                )}
+              </div>
+
+              {inv.hasAnswer && (
+                <div style={ANSWER_CARD}>
+                  <div style={ANSWER_HEAD}>
+                    <span style={VERIFIED_BADGE}>Verified</span>
+                    <span style={CONFIDENCE}>
+                      confidence <span style={CONFIDENCE_VAL}>0.82</span>
+                    </span>
+                    <span style={FLEX1}></span>
+                    <span style={ANSWER_STAT}>4 claims · 5 observations · 3 iterations</span>
+                  </div>
+
+                  <div style={ANSWER_BODY}>
+                    {inv.answerParas.map((p, i) => (
+                      <span key={i} style={ANSWER_PARA}>
+                        {p}
+                      </span>
+                    ))}
+                  </div>
+
+                  {inv.answerDone && (
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <div style={CLAIMS_WRAP}>
+                        <span style={CLAIMS_CAP}>Claim verdicts</span>
+                        {inv.claims.map((c) => (
+                          <div key={c.text} style={CLAIM_ROW}>
+                            <span style={toneStyle(c.tone)}>{c.status}</span>
+                            <span style={CLAIM_TEXT}>{c.text}</span>
+                            <span style={CLAIM_CITE}>{c.cite}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div style={EVID_WRAP}>
+                        <span style={SECTION_CAP}>Evidence gathered</span>
+                        <div style={EVID_GRID}>
+                          {inv.observations.map((o) => (
+                            <div key={o.id} style={EVID_CARD}>
+                              <span style={EVID_IDROW}>
+                                <span style={EVID_ID}>{o.id}</span>
+                                <span style={EVID_TOOL}>{o.tool}</span>
+                              </span>
+                              <span style={EVID_SUMMARY}>{o.summary}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div style={ACTIONS}>
+                        <HoverButton
+                          type="button"
+                          onClick={openRuns}
+                          baseStyle={BTN_PRIMARY}
+                          hoverStyle={BTN_PRIMARY_HOVER}
+                        >
+                          Open dossier
+                        </HoverButton>
+                        <HoverButton type="button" baseStyle={BTN_SECONDARY} hoverStyle={BTN_SECONDARY_HOVER}>
+                          Export evidence trail
+                        </HoverButton>
+                        <HoverButton type="button" baseStyle={BTN_SECONDARY} hoverStyle={BTN_SECONDARY_HOVER}>
+                          Flag for post-mortem
+                        </HoverButton>
+                        <span style={FLEX1}></span>
+                        <HoverButton
+                          type="button"
+                          onClick={inv.reset}
+                          baseStyle={BTN_GHOST}
+                          hoverStyle={BTN_GHOST_HOVER}
+                        >
+                          New investigation
+                        </HoverButton>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
-    );
-  }
 
-  return null;
+      {/* Composer */}
+      <div style={COMPOSER_WRAP}>
+        <div style={COMPOSER_INNER}>
+          <div style={COMPOSER_BOX}>
+            <textarea
+              rows={1}
+              placeholder="Ask why something broke — name a service and a time window"
+              value={inv.draft}
+              onChange={(e) => inv.setDraft(e.target.value)}
+              onKeyDown={inv.onKey}
+              style={TEXTAREA}
+              aria-label="Investigation question"
+            />
+            <HoverButton
+              type="button"
+              onClick={inv.submit}
+              baseStyle={COMPOSER_BTN}
+              hoverStyle={COMPOSER_BTN_HOVER}
+            >
+              Investigate
+            </HoverButton>
+          </div>
+          <span style={COMPOSER_HELP}>
+            Answers stay withheld while a required evidence domain is uncovered. Clarifying questions pause the
+            run and resume from the checkpoint.
+          </span>
+        </div>
+      </div>
+    </div>
+  );
 }

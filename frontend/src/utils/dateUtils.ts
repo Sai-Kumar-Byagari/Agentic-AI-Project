@@ -32,3 +32,14 @@ export const getUTCTimeString = (): string => {
   const minutes = String(now.getUTCMinutes()).padStart(2, '0');
   return `${hours}:${minutes} UTC`;
 };
+
+/**
+ * UTC clock as "HH:MM" (no suffix). The header renders its own " UTC" label
+ * in monospace next to it, matching the reference clock format ("14:41 UTC").
+ */
+export const getUTCClockString = (): string => {
+  const now = new Date();
+  const hours = String(now.getUTCHours()).padStart(2, '0');
+  const minutes = String(now.getUTCMinutes()).padStart(2, '0');
+  return `${hours}:${minutes}`;
+};

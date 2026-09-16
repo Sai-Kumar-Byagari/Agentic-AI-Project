@@ -1,5 +1,6 @@
 import React from 'react';
-import { COLORS } from '../../constants/colors';
+import { css } from '../../utils/css';
+import { C } from '../../constants/designSystem';
 
 export interface NavItem {
   id: string;
@@ -15,96 +16,74 @@ interface AppHeaderProps {
   onLogout: () => void;
 }
 
-export const AppHeader: React.FC<AppHeaderProps> = ({
-  navItems,
-  onTabChange,
-  clock,
-  user,
-  onLogout,
-}) => {
-  const getUserInitials = () => {
-    if (!user) return '?';
-    const first = user.firstName?.charAt(0) || '';
-    const last = user.lastName?.charAt(0) || '';
-    return `${first}${last}`.toUpperCase();
-  };
+const HEADER = css(
+  'flex:none; display:flex; align-items:center; gap:22px; padding:0 22px; height:58px; ' +
+    'background:#FFFFFF; border-bottom:1px solid rgba(35,29,40,.10);'
+);
+const BRAND = css('display:flex; align-items:baseline; gap:9px; flex:none;');
+const BRAND_MARK = css("font-family:'Spectral',Georgia,serif; font-size:22px; line-height:1; color:#33253C;");
+const BRAND_SUB = css('font-size:9px; text-transform:uppercase; letter-spacing:.17em; color:#8B8391;');
+const NAV = css('display:flex; align-items:center; gap:3px; min-width:0; overflow-x:auto;');
+const FLEX1 = css('flex:1;');
+const ENV = css(
+  'display:flex; align-items:center; gap:7px; font-size:11.5px; color:#6B6473; ' +
+    'border:1px solid rgba(35,29,40,.12); border-radius:8px; padding:6px 10px; white-space:nowrap; flex:none;'
+);
+const ENV_DOT = css('width:5px; height:5px; border-radius:50%; background:#5A4270;');
+const CLOCK = css(
+  "font-family:'IBM Plex Mono',monospace; font-size:11px; color:#8B8391; white-space:nowrap; flex:none;"
+);
+const ADMIN = css(
+  'display:flex; align-items:center; gap:7px; font-size:11.5px; color:#6B6473; ' +
+    'border:1px solid rgba(35,29,40,.12); border-radius:8px; padding:6px 10px; white-space:nowrap; flex:none;'
+);
+const ADMIN_2FA = css("font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:.06em; color:#5A4270;");
+const AVATAR_WRAP = css(
+  'display:flex; align-items:center; gap:9px; flex:none; padding-left:6px; ' +
+    'border-left:1px solid rgba(35,29,40,.10);'
+);
+const AVATAR = css(
+  'width:29px; height:29px; border-radius:9px; background:#EDE8F0; color:#5A4270; display:flex; ' +
+    'align-items:center; justify-content:center; font-size:11.5px; font-weight:600; border:none; padding:0; ' +
+    'cursor:pointer;'
+);
+
+const navItemStyle = (active: boolean) =>
+  css(
+    "border:none; border-radius:8px; padding:8px 13px; cursor:pointer; font-family:'Public Sans',sans-serif; " +
+      `font-size:13px; font-weight:${active ? 600 : 400}; white-space:nowrap; ` +
+      `background:${active ? 'rgba(90,66,112,.10)' : 'transparent'}; color:${active ? C.accent : '#6B6473'};`
+  );
+
+export const AppHeader: React.FC<AppHeaderProps> = ({ navItems, onTabChange, clock, user, onLogout }) => {
+  const initials = user
+    ? `${user.firstName?.charAt(0) || ''}${user.lastName?.charAt(0) || ''}`.toUpperCase() || 'RK'
+    : 'RK';
 
   return (
-    <header
-      style={{
-        flex: 'none',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '22px',
-        padding: '0 22px',
-        height: '58px',
-        background: '#FFFFFF',
-        borderBottom: `1px solid ${COLORS.border}`,
-      }}
-    >
-      {/* Logo */}
-      <span style={{ display: 'flex', alignItems: 'baseline', gap: '9px', flex: 'none' }}>
-        <span
-          style={{
-            fontFamily: "'Spectral', Georgia, serif",
-            fontSize: '22px',
-            lineHeight: 1,
-            color: COLORS.deep,
-          }}
-        >
-          GIP
-        </span>
-        <span
-          style={{
-            fontSize: '9px',
-            textTransform: 'uppercase',
-            letterSpacing: '.17em',
-            color: COLORS.textTertiary,
-          }}
-        >
-          Investigation
-        </span>
+    <header style={HEADER}>
+      <span style={BRAND}>
+        <span style={BRAND_MARK}>GIP</span>
+        <span style={BRAND_SUB}>Investigation</span>
       </span>
 
-      {/* Navigation Tabs */}
-      <nav
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '3px',
-          minWidth: 0,
-          overflowX: 'auto',
-        }}
-      >
+      <nav style={NAV}>
         {navItems.map((item) => (
           <button
             key={item.id}
-            onClick={() => onTabChange(item.id)}
             type="button"
-            style={{
-              padding: '8px 12px',
-              border: 'none',
-              background: item.active ? `rgba(${parseInt(COLORS.primary.slice(1, 3), 16)}, ${parseInt(COLORS.primary.slice(3, 5), 16)}, ${parseInt(COLORS.primary.slice(5, 7), 16)}, 0.08)` : 'transparent',
-              color: item.active ? COLORS.primary : COLORS.textSecondary,
-              fontFamily: "'Public Sans', sans-serif",
-              fontSize: '13px',
-              fontWeight: item.active ? 600 : 500,
-              cursor: 'pointer',
-              borderRadius: '6px',
-              transition: 'all 0.2s ease',
-              whiteSpace: 'nowrap',
-              flexShrink: 0,
-            }}
+            onClick={() => onTabChange(item.id)}
+            style={navItemStyle(item.active)}
             onMouseEnter={(e) => {
               if (!item.active) {
-                (e.currentTarget as HTMLButtonElement).style.color = COLORS.deep;
-                (e.currentTarget as HTMLButtonElement).style.background = 'rgba(35,29,40,.04)';
+                e.currentTarget.style.color = '#33253C';
+                e.currentTarget.style.background = 'rgba(35,29,40,.04)';
               }
             }}
             onMouseLeave={(e) => {
               if (!item.active) {
-                (e.currentTarget as HTMLButtonElement).style.color = COLORS.textSecondary;
-                (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
+                e.currentTarget.style.color = '#6B6473';
+                e.currentTarget.style.background = 'transparent';
               }
             }}
           >
@@ -113,145 +92,36 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
         ))}
       </nav>
 
-      {/* Spacer */}
-      <span style={{ flex: 1 }}></span>
+      <span style={FLEX1}></span>
 
-      {/* Status Badge */}
-      <span
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '7px',
-          fontSize: '11.5px',
-          color: COLORS.textSecondary,
-          border: `1px solid ${COLORS.border}`,
-          borderRadius: '8px',
-          padding: '6px 10px',
-          whiteSpace: 'nowrap',
-          flex: 'none',
-        }}
-      >
-        <span
-          style={{
-            width: '5px',
-            height: '5px',
-            borderRadius: '50%',
-            background: COLORS.primary,
-          }}
-        ></span>
+      <span style={ENV}>
+        <span style={ENV_DOT}></span>
         payments · prod-eu
       </span>
 
-      {/* UTC Clock */}
-      <span
-        style={{
-          fontFamily: "'IBM Plex Mono', monospace",
-          fontSize: '11px',
-          color: COLORS.textTertiary,
-          whiteSpace: 'nowrap',
-          flex: 'none',
-        }}
-      >
-        {clock} UTC
-      </span>
+      <span style={CLOCK}>{clock} UTC</span>
 
-      {/* Administration Link */}
       <a
         href="#"
         onClick={(e) => e.preventDefault()}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '7px',
-          fontSize: '11.5px',
-          color: COLORS.textSecondary,
-          border: `1px solid ${COLORS.border}`,
-          borderRadius: '8px',
-          padding: '6px 10px',
-          whiteSpace: 'nowrap',
-          flex: 'none',
-          textDecoration: 'none',
-          cursor: 'pointer',
-          transition: 'all 0.2s ease',
-        }}
+        style={ADMIN}
+        title="Requires a second factor"
         onMouseEnter={(e) => {
-          (e.currentTarget as HTMLAnchorElement).style.color = COLORS.deep;
-          (e.currentTarget as HTMLAnchorElement).style.borderColor = 'rgba(35,29,40,.28)';
+          e.currentTarget.style.color = '#33253C';
+          e.currentTarget.style.borderColor = 'rgba(35,29,40,.28)';
         }}
         onMouseLeave={(e) => {
-          (e.currentTarget as HTMLAnchorElement).style.color = COLORS.textSecondary;
-          (e.currentTarget as HTMLAnchorElement).style.borderColor = COLORS.border;
+          e.currentTarget.style.color = '#6B6473';
+          e.currentTarget.style.borderColor = 'rgba(35,29,40,.12)';
         }}
-        title="Requires a second factor"
       >
         Administration
-        <span
-          style={{
-            fontFamily: "'IBM Plex Mono', monospace",
-            fontSize: '9px',
-            letterSpacing: '.06em',
-            color: COLORS.primary,
-          }}
-        >
-          2FA
-        </span>
+        <span style={ADMIN_2FA}>2FA</span>
       </a>
 
-      {/* User Avatar & Logout */}
-      <span
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '9px',
-          flex: 'none',
-          paddingLeft: '6px',
-          borderLeft: `1px solid ${COLORS.border}`,
-        }}
-      >
-        <span
-          style={{
-            width: '29px',
-            height: '29px',
-            borderRadius: '9px',
-            background: '#EDE8F0',
-            color: COLORS.primary,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '11.5px',
-            fontWeight: 600,
-          }}
-        >
-          {getUserInitials()}
-        </span>
-        <button
-          onClick={onLogout}
-          type="button"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            padding: '6px 10px',
-            border: `1px solid ${COLORS.border}`,
-            borderRadius: '8px',
-            background: 'transparent',
-            fontSize: '11.5px',
-            color: COLORS.textSecondary,
-            fontFamily: "'Public Sans', sans-serif",
-            cursor: 'pointer',
-            whiteSpace: 'nowrap',
-            transition: 'all 0.2s ease',
-          }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.color = COLORS.deep;
-            (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(35,29,40,.28)';
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.color = COLORS.textSecondary;
-            (e.currentTarget as HTMLButtonElement).style.borderColor = COLORS.border;
-          }}
-        >
-          Logout
+      <span style={AVATAR_WRAP}>
+        <button type="button" onClick={onLogout} title="Sign out" aria-label="Sign out" style={AVATAR}>
+          {initials}
         </button>
       </span>
     </header>

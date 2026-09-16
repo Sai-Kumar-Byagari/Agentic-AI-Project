@@ -114,6 +114,30 @@ button:disabled {
   }
 }
 
+/* Investigation timeline animations (ported from GIP Console v3 reference) */
+@keyframes v3pulse {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes v3rise {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 /* Focus Visible for Accessibility */
 button:focus-visible,
 a:focus-visible,

@@ -1,127 +1,53 @@
-import React from 'react';
-import { COLORS } from '../../constants/colors';
+import { css } from '../../utils/css';
+import { toneColor, toneStyle } from '../../constants/designSystem';
+import { consoleService } from '../../services/consoleService';
+
+const ROOT = css('flex:1; min-height:0; overflow-y:auto; padding:22px 24px 40px;');
+const COLUMN = css('max-width:940px; display:flex; flex-direction:column;');
+const ENTRY = css('display:flex; gap:16px; min-width:0;');
+const WHEN = css(
+  "flex:none; width:74px; padding-top:14px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; " +
+    'color:#9A93A0; text-align:right;'
+);
+const RAIL = css('flex:none; width:11px; display:flex; flex-direction:column; align-items:center;');
+const RAIL_LINE = css('flex:1; width:1px; background:rgba(35,29,40,.11);');
+const BODY = css(
+  'flex:1; min-width:0; display:flex; flex-wrap:wrap; align-items:center; gap:7px 13px; padding:11px 0 18px;'
+);
+const ACTION = css("font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#241E29; flex:none;");
+const DETAIL = css('font-size:12.5px; color:#6B6473; flex:1; min-width:200px; line-height:1.5;');
+const ACTOR = css('font-size:11.5px; color:#8B8391; flex:none;');
+
+const AUDIT = consoleService.getAuditTimeline();
 
 export default function AuditScreen() {
   return (
-    <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '30px 24px 10px' }}>
-      <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-        {/* Header */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '13px' }}>
-          <span
-            style={{
-              fontFamily: "'Spectral', Georgia, serif",
-              fontSize: 'clamp(28px, 3.4vw, 40px)',
-              fontWeight: 300,
-              lineHeight: '1.18',
-              color: COLORS.textPrimary,
-            }}
-          >
-            Audit Log
-          </span>
-          <span
-            style={{
-              fontSize: '14.5px',
-              lineHeight: '1.7',
-              color: COLORS.textSecondary,
-              maxWidth: '560px',
-            }}
-          >
-            Complete audit trail of all investigation actions and configuration changes.
-          </span>
-        </div>
-
-        {/* Audit Entries */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '9px' }}>
-          {[
-            {
-              id: 'audit_1',
-              action: 'Investigation Started',
-              actor: 'alice@bank.example',
-              timestamp: '2026-09-16 14:22:00 UTC',
-              outcome: 'success',
-            },
-            {
-              id: 'audit_2',
-              action: 'Settings Updated',
-              actor: 'bob@bank.example',
-              timestamp: '2026-09-16 13:45:00 UTC',
-              outcome: 'success',
-            },
-            {
-              id: 'audit_3',
-              action: 'Integration Failed',
-              actor: 'system',
-              timestamp: '2026-09-16 12:30:00 UTC',
-              outcome: 'error',
-            },
-            {
-              id: 'audit_4',
-              action: 'Configuration Exported',
-              actor: 'carol@bank.example',
-              timestamp: '2026-09-16 11:15:00 UTC',
-              outcome: 'success',
-            },
-          ].map((entry) => (
-            <div
-              key={entry.id}
-              style={{
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: '0',
-                background: '#FFFFFF',
-                border: `1px solid ${COLORS.border}`,
-                borderRadius: '10px',
-                overflow: 'hidden',
-              }}
-            >
-              {/* Spine */}
+    <div style={ROOT}>
+      <div style={COLUMN}>
+        {AUDIT.map((a, i) => (
+          <div key={`${a.when}-${i}`} style={ENTRY}>
+            <span style={WHEN}>{a.when}</span>
+            <span style={RAIL}>
               <span
                 style={{
-                  width: '3px',
-                  background:
-                    entry.outcome === 'success'
-                      ? COLORS.success
-                      : entry.outcome === 'error'
-                        ? COLORS.danger
-                        : COLORS.warning,
+                  width: '9px',
+                  height: '9px',
+                  marginTop: '15px',
+                  borderRadius: '50%',
                   flex: 'none',
+                  background: toneColor(a.outcomeTone),
                 }}
               ></span>
-
-              {/* Content */}
-              <div
-                style={{
-                  flex: 1,
-                  padding: '12px 16px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  justifyContent: 'space-between',
-                  minWidth: 0,
-                }}
-              >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: 0 }}>
-                  <span style={{ fontWeight: 600, color: COLORS.textPrimary }}>
-                    {entry.action}
-                  </span>
-                  <span style={{ fontSize: '12px', color: COLORS.textSecondary }}>
-                    By {entry.actor}
-                  </span>
-                </div>
-                <span
-                  style={{
-                    fontFamily: "'IBM Plex Mono', monospace",
-                    fontSize: '11px',
-                    color: COLORS.textTertiary,
-                    flex: 'none',
-                  }}
-                >
-                  {entry.timestamp}
-                </span>
-              </div>
+              <span style={RAIL_LINE}></span>
+            </span>
+            <div style={BODY}>
+              <span style={ACTION}>{a.action}</span>
+              <span style={DETAIL}>{a.detail}</span>
+              <span style={ACTOR}>{a.actor}</span>
+              <span style={toneStyle(a.outcomeTone)}>{a.outcome}</span>
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
     </div>
   );

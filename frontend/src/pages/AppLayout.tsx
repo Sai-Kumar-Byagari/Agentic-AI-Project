@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { useAuth } from '../hooks/useAuth';
 import { AppHeader } from '../components/common/AppHeader';
 import { COLORS } from '../constants/colors';
-import { getUTCTimeString } from '../utils/dateUtils';
+import { getUTCClockString } from '../utils/dateUtils';
 import { ErrorBoundary } from '../components/common/ErrorBoundary';
 import { selectActiveTab, setActiveTab } from '../redux/slices/appSlice';
 import { RootState } from '../redux/store';
@@ -20,12 +20,12 @@ export default function AppLayout() {
   const dispatch = useDispatch();
   const { user, logout } = useAuth();
   const activeTab = useSelector((state: RootState) => selectActiveTab(state));
-  const [clock, setClock] = useState(getUTCTimeString());
+  const [clock, setClock] = useState(getUTCClockString());
 
   // Update clock every second
   useEffect(() => {
     const interval = setInterval(() => {
-      setClock(getUTCTimeString());
+      setClock(getUTCClockString());
     }, 1000);
     return () => clearInterval(interval);
   }, []);
@@ -93,7 +93,9 @@ export default function AppLayout() {
           onLogout={handleLogout}
         />
 
-        {/* Main Content Area */}
+        {/* Main Content Area — each screen owns its own scroll region so the
+            Investigate screen can pin a fixed sub-header and composer while its
+            timeline scrolls, exactly as the reference does. */}
         <div
           style={{
             flex: 1,
@@ -104,18 +106,7 @@ export default function AppLayout() {
             overflow: 'hidden',
           }}
         >
-          {/* Active Screen */}
-          <div
-            style={{
-              flex: 1,
-              minHeight: 0,
-              overflowY: 'auto',
-              display: 'flex',
-              flexDirection: 'column',
-            }}
-          >
-            {renderActiveScreen()}
-          </div>
+          {renderActiveScreen()}
         </div>
       </div>
     </ErrorBoundary>
